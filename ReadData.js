@@ -7,7 +7,7 @@
 ////// READING IN CSV ////////////
 
 // Visa data by applicant country of origin
-visaCountry = d3.csv("/Data Sources/Clean Visa Data by Country.csv", function(d) {
+visaCountry = d3.csv("Clean Visa Data by Country.csv", function(d) {
   return {
     status : d.status,
     visa_type : d.visa_type,
@@ -23,7 +23,7 @@ visCountry = d3.nest()
                .entries(visaCountry)
 
 // Visa data by employer/sponsor location
-visaEmployer = d3.csv("Data Sources/Visa Data by Employer.csv", function (d) {
+visaEmployer = d3.csv("Visa Data by Employer.csv", function (d) {
   return {
     status : d.status,
     visa_type : d.visa_type,
@@ -39,7 +39,7 @@ visaEmployer = d3.nest()
                  .entries(visaEmployer)
 
 ///// READING IN JSON ///////////
-japan_population = d3.json("Data Sources/japan_population.json")
+music_series = d3.json("music_time_series.json")
 
 function data_type_conversion(node)  {
 	if(node.children.length > 0)  {
@@ -47,7 +47,7 @@ function data_type_conversion(node)  {
 			data_type_conversion(node.children[c]);
 		return;
 	}
-	var time_parser = d3.timeParse('%Y %B');
+	var time_parser = d3.timeParse('%Y-%m-%d');
 	node.counts.forEach(function(d)  {
 		d.date = time_parser(d.date);
 		d.count = +d.count;
@@ -108,6 +108,6 @@ function aggregate_counts(node)  {
 	}
 }
 
-data_type_conversion(japan_population)
-add_parent_links(japan_population)
-aggregate_counts(japan_population)
+data_type_conversion(music_series)
+add_parent_links(music_series)
+aggregate_counts(music_series)
