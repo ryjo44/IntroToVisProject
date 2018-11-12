@@ -39,7 +39,11 @@ visaEmployer = d3.nest()
                  .entries(visaEmployer)
 
 ///// READING IN JSON ///////////
-music_series = d3.json("music_time_series.json")
+var music_series
+d3.json("music_time_series.json")
+  .then(function(data) {
+    music_series = data;
+  })
 
 function data_type_conversion(node)  {
 	if(node.children.length > 0)  {
