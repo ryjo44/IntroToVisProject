@@ -5,6 +5,24 @@
 ////// READING IN CSV ////////////
 
 // create versions of data prep function for use with key/value pairs
+function csv_data_type_conversion(node) {
+  if (typeof node.values != 'undefined') {
+    for (var c = 0; c < node.values.length; c++)
+      csv_data_type_conversion(node.values[c]);
+    return;
+  }
+  var time_parser = d3.timeParse("%m/%d/%Y");
+  node.date = time_parser(node.date)
+}
+
+function csv_add_parent_links(node) {
+  if (typeof node.values != 'undefined') {
+    for (var c = 0; c < node.values.length; c++) {
+      node.values[c].parent = node;
+      csv_add_parent_links(node.values[c]);
+    }
+  }
+}
 
 
 // Visa data by applicant country of origin
@@ -24,6 +42,11 @@ async function countryDat() {
       return d.country;
     })
     .entries(visaCountry)
+    visaCountry = visaCountry[0]
+
+    csv_data_type_conversion(visaCountry)
+    csv_add_parent_links(visaCountry)
+    visaCountry.parent = null
 }
 countryDat()
 
@@ -43,6 +66,12 @@ visaEmployer = d3
     return d.city;
   })
   .entries(visaEmployer);
+  visaEmployer = visaEmployer[0]
+
+  csv_data_type_conversion(visaEmployer)
+  csv_add_parent_links(visaEmployer)
+  visaEmployer.parent = null
+
 }
 employerDat()
 
