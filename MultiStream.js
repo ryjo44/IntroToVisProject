@@ -52,7 +52,7 @@ d3.json("music_time_series.json").then(function(data) {
   music_series.parent = null;
   create_color(music_series);
   aggregate_counts(music_series);
-  plot_it();
+  create_svg();
 });
 
 function data_type_conversion(node) {
@@ -148,7 +148,6 @@ function get_all_count_data(node, all_count_data) {
   for (var c = 0; c < node.children.length; c++)
     get_all_count_data(node.children[c], all_count_data);
 }
-<<<<<<< HEAD:ReadData.js
 
 function create_svg() {
   var width = 800, height = 800;
@@ -202,5 +201,4 @@ function create_svg() {
     .tickSize(-width, 0)
     .tickPadding(5);
 }
-=======
->>>>>>> c6ae7f2d28a5950923995602651fa145ae7519d2:MultiStream.js
+
