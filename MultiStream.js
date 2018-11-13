@@ -24,6 +24,73 @@ function csv_add_parent_links(node) {
   }
 }
 
+// TODO: Ryan
+// Figure out how to perform aggregation with each leaf node
+// having a different set of dates
+function csv_aggregate_counts(node) {
+  // set var to 0 for sum aggregate, 1 for mean
+  var mean_ag = 0;
+
+  if (typeof node.values != 'undefined') {
+
+    // make recursive calls to make sure we populate all the children
+    for (var i = 0; i < node.values.length; i++) {
+      aggregate_counts(node.values[i]);
+    }
+
+    // create array to store aggregated data
+    var agg_data = [];
+
+    // iterate over all dates in the dataset
+    for (var i = 0; i < node.values.length; i++) {
+      var entry = {};
+
+      // get the date for this entry
+      entry.date = node.children[0].counts[i].date;
+
+      // iterate over all children
+      var sum = 0;
+      for (var j = 0; j < node.children.length; j++) {
+        sum = sum + node.children[j].counts[i].count;
+      }
+
+      // get average if the flag is set
+      if (mean_ag === 1) {
+        sum = sum / node.children.length;
+      }
+
+      entry.count = sum;
+
+      // add new entry to array
+      agg_data.push(entry);
+    }
+
+    // create/set node 'counts' field
+    node.counts = agg_data;
+  }
+}
+
+function csv_create_color(root_node) {
+  // black color for root
+  root_node.color = d3.rgb(0, 0, 0);
+  var hue_scale = d3
+    .scaleLinear()
+    .domain([0, root_node.values.length - 1])
+    .range([10, 250]);
+  for (var c = 0; c < root_node.values.length; c++) {
+    var child_node = root_node.values[c];
+    var interpolator = d3.interpolateLab(
+      d3.hsl(hue_scale(c), 0.8, 0.3),
+      d3.hsl(hue_scale(c), 0.8, 0.8)
+    );
+    child_node.color = interpolator(0.5);
+    for (var d = 0; d < child_node.values.length; d++)
+      child_node.values[d].color = interpolator(
+        d / (child_node.values.length - 1)
+      );
+  }
+}
+
 
 // Visa data by applicant country of origin
 var visaCountry;
@@ -42,11 +109,13 @@ async function countryDat() {
       return d.country;
     })
     .entries(visaCountry)
+
     visaCountry = visaCountry[0]
 
     csv_data_type_conversion(visaCountry)
     csv_add_parent_links(visaCountry)
     visaCountry.parent = null
+    csv_create_color(visaCountry)
 }
 countryDat()
 
@@ -71,6 +140,7 @@ visaEmployer = d3
   csv_data_type_conversion(visaEmployer)
   csv_add_parent_links(visaEmployer)
   visaEmployer.parent = null
+  csv_create_color(visaEmployer)
 
 }
 employerDat()
