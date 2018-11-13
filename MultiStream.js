@@ -207,4 +207,3 @@ function create_svg() {
 function create_context_streamgraph() { //TODO(Ellie)
 
 }
-
