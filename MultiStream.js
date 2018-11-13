@@ -201,3 +201,7 @@ function create_svg() {
     .tickPadding(5);
 }
 
+function create_context_streamgraph() { //TODO(Ellie)
+
+}
+
