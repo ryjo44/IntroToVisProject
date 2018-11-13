@@ -9,41 +9,40 @@
 var visaCountry;
 async function countryDat() {
   visaCountry = await d3.csv("Clean Visa Data by Country.csv")
+
+  visaCountry = d3
+    .nest()
+    .key(function(d) {
+      return d.continent;
+    })
+    .key(function(d) {
+      return d.country;
+    })
+    .rollup(function(v) {
+      return v.length;
+    })
+    .entries(visaCountry);
 }
 countryDat()
-
-visaCountry = d3
-  .nest()
-  .key(function(d) {
-    return d.continent;
-  })
-  .key(function(d) {
-    return d.country;
-  })
-  .rollup(function(v) {
-    return v.length;
-  })
-  .entries(visaCountry);
 
 // Visa data by employer/sponsor location
   var visaEmployer;
   async function employerDat() {
-    visaEmployer = await d3.csv("Visa Data by Employer.csv")
+    visaEmployer = await d3.csv("Visa Data by Employer.csv")  
+    visaEmployer = d3
+      .nest()
+      .key(function(d) {
+        return d.job_state;
+      })
+      .key(function(d) {
+        return d.job_city;
+      })
+      .rollup(function(v) {
+        return v.length;
+      })
+      .entries(visaEmployer);
   }
   employerDat()
-
-visaEmployer = d3
-  .nest()
-  .key(function(d) {
-    return d.job_state;
-  })
-  .key(function(d) {
-    return d.job_city;
-  })
-  .rollup(function(v) {
-    return v.length;
-  })
-  .entries(visaEmployer);
 
 ///// READING IN JSON ///////////
 d3.json("music_time_series.json").then(function(data) {
