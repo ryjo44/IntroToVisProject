@@ -57,8 +57,8 @@ d3.json("music_time_series.json").then(function(data) {
   data_type_conversion(music_series);
   add_parent_links(music_series);
   music_series.parent = null;
+  create_color(music_series);
   aggregate_counts(music_series);
-  console.log(music_series);
 });
 
 function data_type_conversion(node) {
@@ -79,6 +79,27 @@ function add_parent_links(node) {
   for (var c = 0; c < node.children.length; c++) {
     node.children[c].parent = node;
     add_parent_links(node.children[c]);
+  }
+}
+
+function create_color(root_node) {
+  // black color for root
+  root_node.color = d3.rgb(0, 0, 0);
+  var hue_scale = d3
+    .scaleLinear()
+    .domain([0, root_node.children.length - 1])
+    .range([10, 250]);
+  for (var c = 0; c < root_node.children.length; c++) {
+    var child_node = root_node.children[c];
+    var interpolator = d3.interpolateLab(
+      d3.hsl(hue_scale(c), 0.8, 0.3),
+      d3.hsl(hue_scale(c), 0.8, 0.8)
+    );
+    child_node.color = interpolator(0.5);
+    for (var d = 0; d < child_node.children.length; d++)
+      child_node.children[d].color = interpolator(
+        d / (child_node.children.length - 1)
+      );
   }
 }
 
