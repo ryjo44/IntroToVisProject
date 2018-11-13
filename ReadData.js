@@ -59,6 +59,7 @@ d3.json("music_time_series.json").then(function(data) {
   music_series.parent = null;
   create_color(music_series);
   aggregate_counts(music_series);
+  plot_it();
 });
 
 function data_type_conversion(node) {
@@ -146,3 +147,15 @@ function aggregate_counts(node) {
     node.counts = agg_data;
   }
 }
+
+function plot_it() {
+    var width = 800, height = 800;
+    var focus_height = 600;
+    var pad = 30;
+    d3.select('body').append('svg').attr('width', width).attr('height', height);
+    d3.select('svg').append('g').attr('id', 'focus');
+    d3.select('svg').append('g').attr('transform', 'translate(' + 0 + ',' + (pad + focus_height)  + ')').attr('id', 'context');
+    d3.select('#focus').append('rect').attr('width', width).attr('height', focus_height).attr('fill', '#999999').attr('opacity', 0.1);
+    d3.select('#context').append('rect').attr('width', width).attr('height', (height - focus_height - pad)).attr('fill', '#999999').attr('opacity', 0.1);
+}
+
