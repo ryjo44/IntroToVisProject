@@ -148,14 +148,63 @@ function aggregate_counts(node) {
   }
 }
 
-function plot_it() {
-    var width = 800, height = 800;
-    var focus_height = 600;
-    var pad = 30;
-    d3.select('body').append('svg').attr('width', width).attr('height', height);
-    d3.select('svg').append('g').attr('id', 'focus');
-    d3.select('svg').append('g').attr('transform', 'translate(' + 0 + ',' + (pad + focus_height)  + ')').attr('id', 'context');
-    d3.select('#focus').append('rect').attr('width', width).attr('height', focus_height).attr('fill', '#999999').attr('opacity', 0.1);
-    d3.select('#context').append('rect').attr('width', width).attr('height', (height - focus_height - pad)).attr('fill', '#999999').attr('opacity', 0.1);
+// go through all nodes and collect count data
+function get_all_count_data(node, all_count_data) {
+  for (var p = 0; p < node.counts.length; p++)
+    all_count_data.push(node.counts[p].count);
+  for (var c = 0; c < node.children.length; c++)
+    get_all_count_data(node.children[c], all_count_data);
 }
 
+function create_svg() {
+  var width = 800, height = 800;
+  var focus_height = 600;
+  var pad = 30;
+  var context_height = height - focus_height - pad;
+  d3.select("body").append("svg").attr("width", width).attr("height", height);
+  d3.select("svg").append("g").attr("id", "focus");
+  d3
+    .select("svg")
+    .append("g")
+    .attr("transform", "translate(" + 0 + "," + (pad + focus_height) + ")")
+    .attr("id", "context");
+  d3
+    .select("#focus")
+    .append("rect")
+    .attr("width", width)
+    .attr("height", focus_height)
+    .attr("fill", "#999999")
+    .attr("opacity", 0.1);
+  d3
+    .select("#context")
+    .append("rect")
+    .attr("width", width)
+    .attr("height", height - focus_height - pad)
+    .attr("fill", "#999999")
+    .attr("opacity", 0.1);
+
+  count_data = [];
+  get_all_count_data(music_series, count_data);
+  var y_context_scale = d3
+    .scaleLinear()
+    .domain([d3.min(count_data), d3.max(count_data)])
+    .range([context_height, 0]);
+  var dates = [];
+  music_series.counts.forEach(function(count) {
+    dates.push(count.date);
+  });
+  var x_context_scale = d3
+    .scaleTime()
+    .domain([d3.min(dates), d3.max(dates)])
+    .range([0, width]);
+  var x_context_axis = d3
+    .axisBottom()
+    .scale(x_context_scale)
+    .tickSize(5, 0)
+    .tickPadding(5);
+  var y_context_axis = d3
+    .axisLeft()
+    .scale(y_context_scale)
+    .tickSize(-width, 0)
+    .tickPadding(5);
+}
