@@ -4,6 +4,9 @@
 
 ////// READING IN CSV ////////////
 
+// create versions of data prep function for use with key/value pairs
+
+
 // Visa data by applicant country of origin
 var visaCountry;
 async function countryDat() {
@@ -20,7 +23,7 @@ async function countryDat() {
     .key(function(d) {
       return d.country;
     })
-    .entries(visaCountry);
+    .entries(visaCountry)
 }
 countryDat()
 
