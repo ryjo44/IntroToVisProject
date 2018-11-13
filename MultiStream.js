@@ -6,50 +6,43 @@
 ////// READING IN CSV ////////////
 
 // Visa data by applicant country of origin
-visaCountry = d3.csv("Clean Visa Data by Country.csv", function(d) {
-  return {
-    status: d.status,
-    visa_type: d.visa_type,
-    country: d.country,
-    continent: d.continent
-  };
-});
+var visaCountry;
+async function countryDat() {
+  visaCountry = await d3.csv("Clean Visa Data by Country.csv")
 
-visCountry = d3
-  .nest()
-  .key(function(d) {
-    return d.continent;
-  })
-  .key(function(d) {
-    return d.country;
-  })
-  .rollup(function(v) {
-    return v.length;
-  })
-  .entries(visaCountry);
+  visaCountry = d3
+    .nest()
+    .key(function(d) {
+      return d.continent;
+    })
+    .key(function(d) {
+      return d.country;
+    })
+    .rollup(function(v) {
+      return v.length;
+    })
+    .entries(visaCountry);
+}
+countryDat()
 
 // Visa data by employer/sponsor location
-visaEmployer = d3.csv("Visa Data by Employer.csv", function(d) {
-  return {
-    status: d.status,
-    visa_type: d.visa_type,
-    city: d.job_city,
-    state: d.job_state
-  };
-});
-
-visaEmployer = d3
-  .nest()
-  .key(function(d) {
-    return d.state;
-  })
-  .key(function(d) {
-    return d.city;
-  })
-  .rollup(function(v) {
-    return v.length;
-  })
-  .entries(visaEmployer);
+  var visaEmployer;
+  async function employerDat() {
+    visaEmployer = await d3.csv("Visa Data by Employer.csv")  
+    visaEmployer = d3
+      .nest()
+      .key(function(d) {
+        return d.job_state;
+      })
+      .key(function(d) {
+        return d.job_city;
+      })
+      .rollup(function(v) {
+        return v.length;
+      })
+      .entries(visaEmployer);
+  }
+  employerDat()
 
 ///// READING IN JSON ///////////
 d3.json("music_time_series.json").then(function(data) {
@@ -155,6 +148,7 @@ function get_all_count_data(node, all_count_data) {
   for (var c = 0; c < node.children.length; c++)
     get_all_count_data(node.children[c], all_count_data);
 }
+<<<<<<< HEAD:ReadData.js
 
 function create_svg() {
   var width = 800, height = 800;
@@ -208,3 +202,5 @@ function create_svg() {
     .tickSize(-width, 0)
     .tickPadding(5);
 }
+=======
+>>>>>>> c6ae7f2d28a5950923995602651fa145ae7519d2:MultiStream.js
