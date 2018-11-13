@@ -6,16 +6,13 @@
 ////// READING IN CSV ////////////
 
 // Visa data by applicant country of origin
-visaCountry = d3.csv("Clean Visa Data by Country.csv", function(d) {
-  return {
-    status: d.status,
-    visa_type: d.visa_type,
-    country: d.country,
-    continent: d.continent
-  };
-});
+var visaCountry;
+async function countryDat() {
+  visaCountry = await d3.csv("Clean Visa Data by Country.csv")
+}
+countryDat()
 
-visCountry = d3
+visaCountry = d3
   .nest()
   .key(function(d) {
     return d.continent;
@@ -29,22 +26,19 @@ visCountry = d3
   .entries(visaCountry);
 
 // Visa data by employer/sponsor location
-visaEmployer = d3.csv("Visa Data by Employer.csv", function(d) {
-  return {
-    status: d.status,
-    visa_type: d.visa_type,
-    city: d.job_city,
-    state: d.job_state
-  };
-});
+  var visaEmployer;
+  async function employerDat() {
+    visaEmployer = await d3.csv("Visa Data by Employer.csv")
+  }
+  employerDat()
 
 visaEmployer = d3
   .nest()
   .key(function(d) {
-    return d.state;
+    return d.job_state;
   })
   .key(function(d) {
-    return d.city;
+    return d.job_city;
   })
   .rollup(function(v) {
     return v.length;
@@ -158,4 +152,3 @@ function plot_it() {
     d3.select('#focus').append('rect').attr('width', width).attr('height', focus_height).attr('fill', '#999999').attr('opacity', 0.1);
     d3.select('#context').append('rect').attr('width', width).attr('height', (height - focus_height - pad)).attr('fill', '#999999').attr('opacity', 0.1);
 }
-
