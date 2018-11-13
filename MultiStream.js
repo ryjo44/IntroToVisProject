@@ -1,6 +1,5 @@
-// ReadData.js
-// Description: Reads in data from either JSON or CSV format.
-//              Groups the data along relevant hierachical groups.
+// MultiStream.js
+// Description: Implementation of MultiStream technique
 // Author: Ryan Capps and Ellie Nguyen
 
 ////// READING IN CSV ////////////
@@ -8,41 +7,41 @@
 // Visa data by applicant country of origin
 var visaCountry;
 async function countryDat() {
-  visaCountry = await d3.csv("Clean Visa Data by Country.csv")
+  visaCountry = await d3.csv("Visa Data by Country.csv")
 
   visaCountry = d3
     .nest()
+    .key(function(d) {
+      return d.all_locations
+    })
     .key(function(d) {
       return d.continent;
     })
     .key(function(d) {
       return d.country;
     })
-    .rollup(function(v) {
-      return v.length;
-    })
     .entries(visaCountry);
 }
 countryDat()
 
 // Visa data by employer/sponsor location
-  var visaEmployer;
-  async function employerDat() {
-    visaEmployer = await d3.csv("Visa Data by Employer.csv")  
-    visaEmployer = d3
-      .nest()
-      .key(function(d) {
-        return d.job_state;
-      })
-      .key(function(d) {
-        return d.job_city;
-      })
-      .rollup(function(v) {
-        return v.length;
-      })
-      .entries(visaEmployer);
-  }
-  employerDat()
+var visaEmployer;
+async function employerDat() {
+visaEmployer = await d3.csv("Visa Data by Employer.csv")
+visaEmployer = d3
+  .nest()
+  .key(function(d) {
+    return d.all_employers
+  })
+  .key(function(d) {
+    return d.state;
+  })
+  .key(function(d) {
+    return d.city;
+  })
+  .entries(visaEmployer);
+}
+employerDat()
 
 ///// READING IN JSON ///////////
 d3.json("music_time_series.json").then(function(data) {

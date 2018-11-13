@@ -9,20 +9,20 @@
 library(tidyverse)
 
 # Load in data from CSV
-setwd("C:/Users/ryjo4/Desktop/Intro to Visualization/Project/Data Sources")
+setwd("C:/Users/ryjo4/Desktop/")
 visaData <- read.csv("us_perm_visas.csv", stringsAsFactors = F)
 
 # Extract Relevant Data Columns
 visaData <- visaData %>% select(case_status, class_of_admission,
                                 country_of_citzenship,
-                                job_info_work_city, job_info_work_state)
+                                job_info_work_city, job_info_work_state,
+                                decision_date)
 
 # Visa Data By Country
-visaDataByCountry <- visaData %>% select(status = case_status,
-                                         visa_type = class_of_admission,
-                                         country = country_of_citzenship)
+visaDataByCountry <- visaData %>% select(country = country_of_citzenship,
+                                         date = decision_date)
 
-visaDataByCountry <- visaDataByCountry %>% filter(country != "")
+visaDataByCountry <- visaDataByCountry %>% filter(country != "", date != "")
 
 visaDataByCountry$continent[visaDataByCountry$country %in% c("CANADA", "UNITED STATES OF AMERICA",
                                                              "DOMINICAN REPUBLIC", "BARBADOS",
@@ -82,68 +82,67 @@ visaDataByCountry$continent[visaDataByCountry$country %in% c("AUSTRALIA", "NEW Z
 
 
 # Visa Data by Employer Information
-visaDataByEmployer <- visaData %>% select(status = case_status,
-                                          visa_type = class_of_admission,
-                                          job_city = job_info_work_city,
-                                          job_state = job_info_work_state)
+visaDataByEmployer <- visaData %>% select(city = job_info_work_city,
+                                          state = job_info_work_state,
+                                          date = decision_date)
 
-visaDataByEmployer <- visaDataByEmployer %>% filter(job_city != "", job_state != "")
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "NY"] <- "NEW YORK"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "TX"] <- "TEXAS"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "IL"] <- "ILLINOIS"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "WY"] <- "WYOMING"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "MA"] <- "MASSACHUSETTS"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "NC"] <- "NORTH CAROLINA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "AZ"] <- "ARIZONA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "WA"] <- "WASHINGTON"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "NV"] <- "NEVADA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "OR"] <- "OREGON"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "DC"] <- "DISTRICT OF COLUMBIA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "RI"] <- "RHODE ISLAND"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "SD"] <- "SOUTH DAKOTA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "KS"] <- "KANSAS"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "AR"] <- "ARKANSAS"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "SC"] <- "SOUTH CAROLINA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "ND"] <- "NORTH DAKOTA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "ME"] <- "MAINE"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "MD"] <- "MARYLAND"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "NJ"] <- "NEW JERSEY"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "CA"] <- "CALIFORNIA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "OH"] <- "OHIO"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "VA"] <- "VIRGINIA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "MO"] <- "MISSOURI"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "WI"] <- "WISCONSIN"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "CO"] <- "COLORADO"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "UT"] <- "UTAH"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "OK"] <- "OKLAHOMA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "MI"] <- "MICHIGAN"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "NH"] <- "NEW HAMPSHIRE"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "NM"] <- "NEW MEXICO"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "TN"] <- "TENNESSEE"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "GU"] <- "GUAM"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "DE"] <- "DELEWARE"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "HI"] <- "HAWAII"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "AK"] <- "ALASKA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "FL"] <- "FLORIDA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "GA"] <- "GEORGIA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "KY"] <- "KENTUCKY"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "MS"] <- "MISSISSIPPI"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "ID"] <- "IDAHO"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "CT"] <- "CONNECTICUT"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "PA"] <- "PENNSYLVANIA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "MN"] <- "MINNESOTA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "AL"] <- "ALABAMA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "LA"] <- "LOUISIANA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "IA"] <- "IOWA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "IN"] <- "INDIANA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "NE"] <- "NEBRASKA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "PR"] <- "PUERTO RICO"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "WV"] <- "WEST VIRGINIA"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "VI"] <- "VIRGIN ISLANDS"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "VT"] <- "VERMONT"
-visaDataByEmployer$job_state[visaDataByEmployer$job_state == "MT"] <- "MONTANA"
-
+visaDataByEmployer <- visaDataByEmployer %>% filter(city != "", state != "", date != "")
+visaDataByEmployer$state[visaDataByEmployer$state == "NY"] <- "NEW YORK"
+visaDataByEmployer$state[visaDataByEmployer$state == "TX"] <- "TEXAS"
+visaDataByEmployer$state[visaDataByEmployer$state == "IL"] <- "ILLINOIS"
+visaDataByEmployer$state[visaDataByEmployer$state == "WY"] <- "WYOMING"
+visaDataByEmployer$state[visaDataByEmployer$state == "MA"] <- "MASSACHUSETTS"
+visaDataByEmployer$state[visaDataByEmployer$state == "NC"] <- "NORTH CAROLINA"
+visaDataByEmployer$state[visaDataByEmployer$state == "AZ"] <- "ARIZONA"
+visaDataByEmployer$state[visaDataByEmployer$state == "WA"] <- "WASHINGTON"
+visaDataByEmployer$state[visaDataByEmployer$state == "NV"] <- "NEVADA"
+visaDataByEmployer$state[visaDataByEmployer$state == "OR"] <- "OREGON"
+visaDataByEmployer$state[visaDataByEmployer$state == "DC"] <- "DISTRICT OF COLUMBIA"
+visaDataByEmployer$state[visaDataByEmployer$state == "RI"] <- "RHODE ISLAND"
+visaDataByEmployer$state[visaDataByEmployer$state == "SD"] <- "SOUTH DAKOTA"
+visaDataByEmployer$state[visaDataByEmployer$state == "KS"] <- "KANSAS"
+visaDataByEmployer$state[visaDataByEmployer$state == "AR"] <- "ARKANSAS"
+visaDataByEmployer$state[visaDataByEmployer$state == "SC"] <- "SOUTH CAROLINA"
+visaDataByEmployer$state[visaDataByEmployer$state == "ND"] <- "NORTH DAKOTA"
+visaDataByEmployer$state[visaDataByEmployer$state == "ME"] <- "MAINE"
+visaDataByEmployer$state[visaDataByEmployer$state == "MD"] <- "MARYLAND"
+visaDataByEmployer$state[visaDataByEmployer$state == "NJ"] <- "NEW JERSEY"
+visaDataByEmployer$state[visaDataByEmployer$state == "CA"] <- "CALIFORNIA"
+visaDataByEmployer$state[visaDataByEmployer$state == "OH"] <- "OHIO"
+visaDataByEmployer$state[visaDataByEmployer$state == "VA"] <- "VIRGINIA"
+visaDataByEmployer$state[visaDataByEmployer$state == "MO"] <- "MISSOURI"
+visaDataByEmployer$state[visaDataByEmployer$state == "WI"] <- "WISCONSIN"
+visaDataByEmployer$state[visaDataByEmployer$state == "CO"] <- "COLORADO"
+visaDataByEmployer$state[visaDataByEmployer$state == "UT"] <- "UTAH"
+visaDataByEmployer$state[visaDataByEmployer$state == "OK"] <- "OKLAHOMA"
+visaDataByEmployer$state[visaDataByEmployer$state == "MI"] <- "MICHIGAN"
+visaDataByEmployer$state[visaDataByEmployer$state == "NH"] <- "NEW HAMPSHIRE"
+visaDataByEmployer$state[visaDataByEmployer$state == "NM"] <- "NEW MEXICO"
+visaDataByEmployer$state[visaDataByEmployer$state == "TN"] <- "TENNESSEE"
+visaDataByEmployer$state[visaDataByEmployer$state == "GU"] <- "GUAM"
+visaDataByEmployer$state[visaDataByEmployer$state == "DE"] <- "DELEWARE"
+visaDataByEmployer$state[visaDataByEmployer$state == "HI"] <- "HAWAII"
+visaDataByEmployer$state[visaDataByEmployer$state == "AK"] <- "ALASKA"
+visaDataByEmployer$state[visaDataByEmployer$state == "FL"] <- "FLORIDA"
+visaDataByEmployer$state[visaDataByEmployer$state == "GA"] <- "GEORGIA"
+visaDataByEmployer$state[visaDataByEmployer$state == "KY"] <- "KENTUCKY"
+visaDataByEmployer$state[visaDataByEmployer$state == "MS"] <- "MISSISSIPPI"
+visaDataByEmployer$state[visaDataByEmployer$state == "ID"] <- "IDAHO"
+visaDataByEmployer$state[visaDataByEmployer$state == "CT"] <- "CONNECTICUT"
+visaDataByEmployer$state[visaDataByEmployer$state == "PA"] <- "PENNSYLVANIA"
+visaDataByEmployer$state[visaDataByEmployer$state == "MN"] <- "MINNESOTA"
+visaDataByEmployer$state[visaDataByEmployer$state == "AL"] <- "ALABAMA"
+visaDataByEmployer$state[visaDataByEmployer$state == "LA"] <- "LOUISIANA"
+visaDataByEmployer$state[visaDataByEmployer$state == "IA"] <- "IOWA"
+visaDataByEmployer$state[visaDataByEmployer$state == "IN"] <- "INDIANA"
+visaDataByEmployer$state[visaDataByEmployer$state == "NE"] <- "NEBRASKA"
+visaDataByEmployer$state[visaDataByEmployer$state == "PR"] <- "PUERTO RICO"
+visaDataByEmployer$state[visaDataByEmployer$state == "WV"] <- "WEST VIRGINIA"
+visaDataByEmployer$state[visaDataByEmployer$state == "VI"] <- "VIRGIN ISLANDS"
+visaDataByEmployer$state[visaDataByEmployer$state == "VT"] <- "VERMONT"
+visaDataByEmployer$state[visaDataByEmployer$state == "MT"] <- "MONTANA"
 
 
-visaDataByEmployer$job_city <- toupper(visaDataByEmployer$job_city)
+
+visaDataByEmployer$city <- toupper(visaDataByEmployer$city)
 
