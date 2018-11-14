@@ -2,6 +2,14 @@
 // Description: Implementation of MultiStream technique
 // Author: Ryan Capps and Ellie Nguyen
 
+
+// Global Variables
+//var dataset = music_series;
+//var focus_data = music_series;
+//var context_data = music_series;
+//var start_focus;
+//var end_focus;
+
 ////// READING IN CSV ////////////
 
 // create versions of data prep function for use with key/value pairs
@@ -318,5 +326,13 @@ function create_svg() {
 }
 
 function create_context_streamgraph() { //TODO(Ellie)
+
+}
+
+function create_focus_steamgraph() { // TODO
+
+}
+
+function create_hierarchy_manager() { // TODO: Ryan
 
 }
