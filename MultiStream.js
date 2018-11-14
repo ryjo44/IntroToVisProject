@@ -28,45 +28,48 @@ function csv_add_parent_links(node) {
 // Figure out how to perform aggregation with each leaf node
 // having a different set of dates
 function csv_aggregate_counts(node) {
-  // set var to 0 for sum aggregate, 1 for mean
-  var mean_ag = 0;
 
-  if (typeof node.values != 'undefined') {
-
-    // make recursive calls to make sure we populate all the children
+  // Check if in leaf node
+  if (typeof node.values == 'undefined') {
+    // populate leaf node with "counts"
+    node.counts = {date : node.date,
+                   count : 1}
+  } else {
+    // recursive call to make sure all children are aggregated
     for (var i = 0; i < node.values.length; i++) {
-      aggregate_counts(node.values[i]);
+      csv_aggregate_counts(node.values[i])
     }
 
     // create array to store aggregated data
-    var agg_data = [];
+    var agg_data = []
 
-    // iterate over all dates in the dataset
+    // iterate through all children, all dates
     for (var i = 0; i < node.values.length; i++) {
-      var entry = {};
+      for (var j = 0; j < node.values[i].counts.length; j++) {
+        // create a temporary entry
+        var entry = {}
+        entry.date = node.values[i].counts[j].date
+        entry.count = 1
 
-      // get the date for this entry
-      entry.date = node.children[0].counts[i].date;
+        // check to see if that date is already in the aggregation
+        flag = 0
+        for (var x = 0; x < agg_data.length, flag != 1; x++) {
+          // if we find it, increment count there and exit
+          if (agg_data[x].date == entry.date) {
+            flag = 1;
+            agg_data[x].count = agg_data[x].count + 1
+          }
+        }
 
-      // iterate over all children
-      var sum = 0;
-      for (var j = 0; j < node.children.length; j++) {
-        sum = sum + node.children[j].counts[i].count;
+        // if the date wasn't already there, add our entry
+        if (flag == 0) {
+          agg_data.push(entry)
+        }
       }
-
-      // get average if the flag is set
-      if (mean_ag === 1) {
-        sum = sum / node.children.length;
-      }
-
-      entry.count = sum;
-
-      // add new entry to array
-      agg_data.push(entry);
     }
 
-    // create/set node 'counts' field
-    node.counts = agg_data;
+    // set counts for parent to our aggregated data
+    node.counts = agg_data
   }
 }
 
