@@ -11,7 +11,7 @@ function csv_data_type_conversion(node) {
       csv_data_type_conversion(node.values[c]);
     return;
   }
-  var time_parser = d3.timeParse("%m/%d/%Y");
+  var time_parser = d3.timeParse("%b-%y");
   node.date = time_parser(node.date)
 }
 
@@ -46,14 +46,15 @@ function csv_aggregate_counts(node) {
     // iterate through all children, all dates
     for (var i = 0; i < node.values.length; i++) {
       for (var j = 0; j < node.values[i].counts.length; j++) {
+
         // create a temporary entry
         var entry = {}
         entry.date = node.values[i].counts[j].date
         entry.count = 1
 
         // check to see if that date is already in the aggregation
-        flag = 0
-        for (var x = 0; x < agg_data.length, flag != 1; x++) {
+        var flag = 0
+        for (var x = 0; x < agg_data.length; x++) {
           // if we find it, increment count there and exit
           if (agg_data[x].date == entry.date) {
             flag = 1;
@@ -67,7 +68,6 @@ function csv_aggregate_counts(node) {
         }
       }
     }
-
     // set counts for parent to our aggregated data
     node.counts = agg_data
   }
@@ -91,6 +91,16 @@ function csv_create_color(root_node) {
       child_node.values[d].color = interpolator(
         d / (child_node.values.length - 1)
       );
+  }
+}
+
+function csv_get_all_count_data(node, all_count_data) {
+  for (var p = 0; p < node.counts.length; p++)
+    all_count_data.push(node.counts[p].count);
+
+  if (typeof node.values != 'undefined') {
+    for (var c = 0; c < node.values.length; c++)
+      csv_get_all_count_data(node.values[c], all_count_data);
   }
 }
 
@@ -119,6 +129,7 @@ async function countryDat() {
     csv_add_parent_links(visaCountry)
     visaCountry.parent = null
     csv_create_color(visaCountry)
+    //csv_aggregate_counts(visaCountry)
 }
 countryDat()
 
@@ -144,7 +155,7 @@ visaEmployer = d3
   csv_add_parent_links(visaEmployer)
   visaEmployer.parent = null
   csv_create_color(visaEmployer)
-
+//  csv_aggregate_counts(visaEmployer)
 }
 employerDat()
 
