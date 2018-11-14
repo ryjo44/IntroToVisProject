@@ -116,12 +116,12 @@ function csv_get_all_count_data(node, all_count_data) {
 // Visa data by applicant country of origin
 var visaCountry;
 async function countryDat() {
-  visaCountry = await d3.csv("Visa Data by Country.csv")
+  visaCountry = await d3.csv("Visa Data by Country.csv");
 
   visaCountry = d3
     .nest()
     .key(function(d) {
-      return d.all_locations
+      return d.all_locations;
     })
     .key(function(d) {
       return d.continent;
@@ -139,11 +139,12 @@ async function countryDat() {
     csv_create_color(visaCountry)
     csv_aggregate_counts(visaCountry)
 }
-countryDat()
+countryDat();
 
 // Visa data by employer/sponsor location
 var visaEmployer;
 async function employerDat() {
+
 visaEmployer = await d3.csv("Visa Data by Employer.csv")
 visaEmployer = d3
   .nest()
@@ -164,8 +165,23 @@ visaEmployer = d3
   visaEmployer.parent = null
   csv_create_color(visaEmployer)
   csv_aggregate_counts(visaEmployer)
+
+  visaEmployer = await d3.csv("Visa Data by Employer.csv");
+  visaEmployer = d3
+    .nest()
+    .key(function(d) {
+      return d.all_employers;
+    })
+    .key(function(d) {
+      return d.state;
+    })
+    .key(function(d) {
+      return d.city;
+    })
+    .entries(visaEmployer);
+
 }
-employerDat()
+employerDat();
 
 ///// READING IN JSON ///////////
 d3.json("music_time_series.json").then(function(data) {
@@ -325,8 +341,9 @@ function create_svg() {
     .tickPadding(5);
 }
 
-function create_context_streamgraph() { //TODO(Ellie)
-
+function create_context_streamgraph() {
+  //TODO(Ellie)
+  var stack = d3.stack().offset(d3.stackOffsetSilhouette);
 }
 
 function create_focus_steamgraph() { // TODO
