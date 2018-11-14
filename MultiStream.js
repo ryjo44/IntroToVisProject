@@ -129,7 +129,7 @@ async function countryDat() {
     csv_add_parent_links(visaCountry)
     visaCountry.parent = null
     csv_create_color(visaCountry)
-    //csv_aggregate_counts(visaCountry)
+    csv_aggregate_counts(visaCountry)
 }
 countryDat()
 
@@ -155,7 +155,7 @@ visaEmployer = d3
   csv_add_parent_links(visaEmployer)
   visaEmployer.parent = null
   csv_create_color(visaEmployer)
-//  csv_aggregate_counts(visaEmployer)
+  csv_aggregate_counts(visaEmployer)
 }
 employerDat()
 
