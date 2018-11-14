@@ -315,6 +315,9 @@ function create_svg() {
     .attr("fill", "#999999")
     .attr("opacity", 0.1);
 
+    // TODO: Ryan 
+    // add svg element for hierarchy manager
+
   count_data = [];
   get_all_count_data(music_series, count_data);
   var y_context_scale = d3
