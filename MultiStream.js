@@ -4,11 +4,11 @@
 
 
 // Global Variables
-//var dataset = music_series;
-//var focus_data = music_series;
-//var context_data = music_series;
-//var start_focus;
-//var end_focus;
+var dataset;
+var focus_data;
+var context_data;
+var start_focus;
+var end_focus;
 
 ////// READING IN CSV ////////////
 
@@ -192,6 +192,7 @@ d3.json("music_time_series.json").then(function(data) {
   create_color(music_series);
   aggregate_counts(music_series);
   create_svg();
+  create_hierarchy_manager();
 });
 
 function data_type_conversion(node) {
@@ -315,7 +316,7 @@ function create_svg() {
     .attr("fill", "#999999")
     .attr("opacity", 0.1);
 
-    // TODO: Ryan 
+    // TODO: Ryan
     // add svg element for hierarchy manager
 
   count_data = [];
@@ -359,5 +360,6 @@ function create_focus_steamgraph() { // TODO
 }
 
 function create_hierarchy_manager() { // TODO: Ryan
-
+  context_data = music_series;
+  focus_data = music_series.children;
 }
