@@ -32,8 +32,8 @@ function csv_aggregate_counts(node) {
   // Check if in leaf node
   if (typeof node.values == 'undefined') {
     // populate leaf node with "counts"
-    node.counts = {date : node.date,
-                   count : 1}
+    node.counts = [{date : node.date,
+                   count : 1}]
   } else {
     // recursive call to make sure all children are aggregated
     for (var i = 0; i < node.values.length; i++) {
