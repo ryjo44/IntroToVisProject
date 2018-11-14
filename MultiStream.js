@@ -2,7 +2,6 @@
 // Description: Implementation of MultiStream technique
 // Author: Ryan Capps and Ellie Nguyen
 
-
 // Global Variables
 var dataset;
 var focus_data;
@@ -14,17 +13,17 @@ var end_focus;
 
 // create versions of data prep function for use with key/value pairs
 function csv_data_type_conversion(node) {
-  if (typeof node.values != 'undefined') {
+  if (typeof node.values != "undefined") {
     for (var c = 0; c < node.values.length; c++)
       csv_data_type_conversion(node.values[c]);
     return;
   }
   var time_parser = d3.timeParse("%m/%d/%Y");
-  node.date = time_parser(node.date)
+  node.date = time_parser(node.date);
 }
 
 function csv_add_parent_links(node) {
-  if (typeof node.values != 'undefined') {
+  if (typeof node.values != "undefined") {
     for (var c = 0; c < node.values.length; c++) {
       node.values[c].parent = node;
       csv_add_parent_links(node.values[c]);
@@ -36,48 +35,50 @@ function csv_add_parent_links(node) {
 // Figure out how to perform aggregation with each leaf node
 // having a different set of dates
 function csv_aggregate_counts(node) {
-
   // Check if in leaf node
-  if (typeof node.values == 'undefined') {
+  if (typeof node.values == "undefined") {
     // populate leaf node with "counts"
-    node.counts = [{date : node.date,
-                   count : 1}]
+    node.counts = [
+      {
+        date: node.date,
+        count: 1
+      }
+    ];
   } else {
     // recursive call to make sure all children are aggregated
     for (var i = 0; i < node.values.length; i++) {
-      csv_aggregate_counts(node.values[i])
+      csv_aggregate_counts(node.values[i]);
     }
 
     // create array to store aggregated data
-    var agg_data = []
+    var agg_data = [];
 
     // iterate through all children, all dates
     for (var i = 0; i < node.values.length; i++) {
       for (var j = 0; j < node.values[i].counts.length; j++) {
-
         // create a temporary entry
-        var entry = {}
-        entry.date = node.values[i].counts[j].date
-        entry.count = 1
+        var entry = {};
+        entry.date = node.values[i].counts[j].date;
+        entry.count = 1;
 
         // check to see if that date is already in the aggregation
-        var flag = 0
+        var flag = 0;
         for (var x = 0; x < agg_data.length; x++) {
           // if we find it, increment count there and exit
           if (agg_data[x].date.getTime() == entry.date.getTime()) {
             flag = 1;
-            agg_data[x].count = agg_data[x].count + 1
+            agg_data[x].count = agg_data[x].count + 1;
           }
         }
 
         // if the date wasn't already there, add our entry
         if (flag == 0) {
-          agg_data.push(entry)
+          agg_data.push(entry);
         }
       }
     }
     // set counts for parent to our aggregated data
-    node.counts = agg_data
+    node.counts = agg_data;
   }
 }
 
@@ -106,12 +107,11 @@ function csv_get_all_count_data(node, all_count_data) {
   for (var p = 0; p < node.counts.length; p++)
     all_count_data.push(node.counts[p].count);
 
-  if (typeof node.values != 'undefined') {
+  if (typeof node.values != "undefined") {
     for (var c = 0; c < node.values.length; c++)
       csv_get_all_count_data(node.values[c], all_count_data);
   }
 }
-
 
 // Visa data by applicant country of origin
 var visaCountry;
@@ -129,42 +129,41 @@ async function countryDat() {
     .key(function(d) {
       return d.country;
     })
-    .entries(visaCountry)
+    .entries(visaCountry);
 
-    visaCountry = visaCountry[0]
+  visaCountry = visaCountry[0];
 
-    csv_data_type_conversion(visaCountry)
-    csv_add_parent_links(visaCountry)
-    visaCountry.parent = null
-    csv_create_color(visaCountry)
-    csv_aggregate_counts(visaCountry)
+  csv_data_type_conversion(visaCountry);
+  csv_add_parent_links(visaCountry);
+  visaCountry.parent = null;
+  csv_create_color(visaCountry);
+  csv_aggregate_counts(visaCountry);
 }
 countryDat();
 
 // Visa data by employer/sponsor location
 var visaEmployer;
 async function employerDat() {
+  visaEmployer = await d3.csv("Visa Data by Employer.csv");
+  visaEmployer = d3
+    .nest()
+    .key(function(d) {
+      return d.all_employers;
+    })
+    .key(function(d) {
+      return d.state;
+    })
+    .key(function(d) {
+      return d.city;
+    })
+    .entries(visaEmployer);
+  visaEmployer = visaEmployer[0];
 
-visaEmployer = await d3.csv("Visa Data by Employer.csv")
-visaEmployer = d3
-  .nest()
-  .key(function(d) {
-    return d.all_employers
-  })
-  .key(function(d) {
-    return d.state;
-  })
-  .key(function(d) {
-    return d.city;
-  })
-  .entries(visaEmployer);
-  visaEmployer = visaEmployer[0]
-
-  csv_data_type_conversion(visaEmployer)
-  csv_add_parent_links(visaEmployer)
-  visaEmployer.parent = null
-  csv_create_color(visaEmployer)
-  csv_aggregate_counts(visaEmployer)
+  csv_data_type_conversion(visaEmployer);
+  csv_add_parent_links(visaEmployer);
+  visaEmployer.parent = null;
+  csv_create_color(visaEmployer);
+  csv_aggregate_counts(visaEmployer);
 
   visaEmployer = await d3.csv("Visa Data by Employer.csv");
   visaEmployer = d3
@@ -179,7 +178,6 @@ visaEmployer = d3
       return d.city;
     })
     .entries(visaEmployer);
-
 }
 employerDat();
 
@@ -193,6 +191,7 @@ d3.json("music_time_series.json").then(function(data) {
   aggregate_counts(music_series);
   create_svg();
   create_hierarchy_manager();
+  create_context_streamgraph();
 });
 
 function data_type_conversion(node) {
@@ -316,50 +315,68 @@ function create_svg() {
     .attr("fill", "#999999")
     .attr("opacity", 0.1);
 
-    // TODO: Ryan
-    // add svg element for hierarchy manager
-
-  count_data = [];
-  get_all_count_data(music_series, count_data);
-  var y_context_scale = d3
-    .scaleLinear()
-    .domain([d3.min(count_data), d3.max(count_data)])
-    .range([context_height, 0]);
-  var dates = [];
-  music_series.counts.forEach(function(count) {
-    dates.push(count.date);
-  });
-  var x_context_scale = d3
-    .scaleTime()
-    .domain([d3.min(dates), d3.max(dates)])
-    .range([0, width]);
-  var x_context_axis = d3
-    .axisBottom()
-    .scale(x_context_scale)
-    .tickSize(5, 0)
-    .tickPadding(5);
-  var y_context_axis = d3
-    .axisLeft()
-    .scale(y_context_scale)
-    .tickSize(-width, 0)
-    .tickPadding(5);
+  // TODO: Ryan
+  // add svg element for hierarchy manager
 }
-
-
 
 // REMEMBER
 // Call create_hierarchy_manager before steamgraphs
 // Steam graph data dependent on state of hierarchy manager
 function create_context_streamgraph() {
   //TODO(Ellie)
-  var stack = d3.stack().offset(d3.stackOffsetSilhouette);
+  var data = [];
+  context_data.children.map(child => {
+    data.push(
+      child.counts.map(count => {
+        return {
+          ...count,
+          value: count.count,
+          name: child.name
+        };
+      })
+    );
+  });
+  data = data.flat();
+  function multimap(
+    entries,
+    reducer = (p, v) => (p.push(v), p),
+    initializer = () => []
+  ) {
+    const map = new Map();
+    for (const [key, value] of entries) {
+      map.set(
+        key,
+        reducer(map.has(key) ? map.get(key) : initializer(key), value)
+      );
+    }
+    return map;
+  }
+  const stack = d3
+    .stack()
+    .keys(context_data.children.map(child => child.name))
+    .value((d, key) => d.get(key).value)
+    .offset(d3.stackOffsetSilhouette)(
+    Array.from(
+      multimap(
+        data.map(d => [+d.date, d]),
+        (p, v) => p.set(v.name, v),
+        () => new Map()
+      ).values()
+    )
+  );
+  for (const layer of stack) {
+    for (const d of layer) {
+      d.data.get(layer.key).values = [d[0], d[1]];
+    }
+  }
 }
 
-function create_focus_steamgraph() { // TODO
-
+function create_focus_steamgraph() {
+  // TODO
 }
 
-function create_hierarchy_manager() { // TODO: Ryan
+function create_hierarchy_manager() {
+  // TODO: Ryan
   context_data = music_series;
   focus_data = music_series.children;
 }
