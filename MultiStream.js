@@ -11,7 +11,7 @@ function csv_data_type_conversion(node) {
       csv_data_type_conversion(node.values[c]);
     return;
   }
-  var time_parser = d3.timeParse("%b-%y");
+  var time_parser = d3.timeParse("%m/%d/%Y");
   node.date = time_parser(node.date)
 }
 
@@ -56,7 +56,7 @@ function csv_aggregate_counts(node) {
         var flag = 0
         for (var x = 0; x < agg_data.length; x++) {
           // if we find it, increment count there and exit
-          if (agg_data[x].date == entry.date) {
+          if (agg_data[x].date.getTime() == entry.date.getTime()) {
             flag = 1;
             agg_data[x].count = agg_data[x].count + 1
           }
