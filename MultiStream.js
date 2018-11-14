@@ -341,6 +341,11 @@ function create_svg() {
     .tickPadding(5);
 }
 
+
+
+// REMEMBER
+// Call create_hierarchy_manager before steamgraphs
+// Steam graph data dependent on state of hierarchy manager
 function create_context_streamgraph() {
   //TODO(Ellie)
   var stack = d3.stack().offset(d3.stackOffsetSilhouette);
