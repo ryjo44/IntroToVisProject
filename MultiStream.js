@@ -192,6 +192,7 @@ d3.json("music_time_series.json").then(function(data) {
   create_svg();
   create_hierarchy_manager();
   create_context_streamgraph();
+  create_focus_steamgraph();
 });
 
 function data_type_conversion(node) {
@@ -295,6 +296,8 @@ function create_svg() {
   var context_height = height - focus_height - pad;
   x_context_scale = d3.scaleTime().range([0, width]);
   y_context_scale = d3.scaleLinear().range([context_height, 0]);
+  x_focus_scale = d3.scaleTime().range([0, width]);
+  y_focus_scale = d3.scaleLinear().range([focus_height, 0]);
   d3.select("body").append("svg").attr("width", width).attr("height", height);
   d3.select("svg").append("g").attr("id", "focus");
   d3
@@ -309,6 +312,19 @@ function create_svg() {
     .attr("height", focus_height)
     .attr("fill", "#999999")
     .attr("opacity", 0.1);
+
+  d3
+    .select("#focus")
+    .selectAll(".first")
+    .data(["left", "middle", "right"])
+    .enter()
+    .append("g")
+    .attr("transform", (d, i) => "translate(" + width / 3 * i + "," + 0 + ")")
+    .attr("id", d => d);
+
+  d3.select("#left").attr("class", "first");
+  d3.select("#right").attr("class", "first");
+
   d3
     .select("#context")
     .append("rect")
@@ -321,13 +337,48 @@ function create_svg() {
   // add svg element for hierarchy manager
 }
 
+function multimap(
+  entries,
+  reducer = (p, v) => (p.push(v), p),
+  initializer = () => []
+) {
+  const map = new Map();
+  for (const [key, value] of entries) {
+    map.set(
+      key,
+      reducer(map.has(key) ? map.get(key) : initializer(key), value)
+    );
+  }
+  return map;
+}
+
+function get_stack(input) {
+  var data_for_stack = Array.from(
+    multimap(
+      input.map(d => [+d.date, d]),
+      (p, v) => p.set(v.name, v),
+      () => new Map()
+    ).values()
+  );
+  stack = d3
+    .stack()
+    .keys(Array.from(new Set(input.map(d => d.name))))
+    .value((d, key) => d.get(key).value)
+    .offset(d3.stackOffsetSilhouette);
+  for (const layer of stack(data_for_stack)) {
+    for (const d of layer) {
+      d.data.get(layer.key).values = [d[0], d[1]];
+    }
+  }
+  return input;
+}
 // REMEMBER
 // Call create_hierarchy_manager before steamgraphs
 // Steam graph data dependent on state of hierarchy manager
 function create_context_streamgraph() {
   //TODO(Ellie)
-  var data = [];
-  context_data.children.map(child => {
+  data = [];
+  context_data.map(child => {
     data.push(
       child.counts.map(count => {
         return {
@@ -339,40 +390,12 @@ function create_context_streamgraph() {
     );
   });
   data = data.flat();
-  function multimap(
-    entries,
-    reducer = (p, v) => (p.push(v), p),
-    initializer = () => []
-  ) {
-    const map = new Map();
-    for (const [key, value] of entries) {
-      map.set(
-        key,
-        reducer(map.has(key) ? map.get(key) : initializer(key), value)
-      );
-    }
-    return map;
-  }
-  const stack = d3
-    .stack()
-    .keys(context_data.children.map(child => child.name))
-    .value((d, key) => d.get(key).value)
-    .offset(d3.stackOffsetSilhouette)(
-    Array.from(
-      multimap(
-        data.map(d => [+d.date, d]),
-        (p, v) => p.set(v.name, v),
-        () => new Map()
-      ).values()
-    )
-  );
-  for (const layer of stack) {
-    for (const d of layer) {
-      d.data.get(layer.key).values = [d[0], d[1]];
-    }
-  }
+  data = get_stack(data);
   x_context_scale = x_context_scale.domain(d3.extent(data, d => d.date));
-  y_context_scale = y_context_scale.domain([-(d3.max(data, d => d.values[1])), d3.max(data, d => d.values[1])]);
+  y_context_scale = y_context_scale.domain([
+    -d3.max(data, d => d.values[1]),
+    d3.max(data, d => d.values[1])
+  ]);
   color = d3.scaleOrdinal(d3.schemeCategory10).domain(data.map(d => d.name));
   area = d3
     .area()
@@ -395,10 +418,73 @@ function create_context_streamgraph() {
 
 function create_focus_steamgraph() {
   // TODO
+  x_focus_scale = x_focus_scale.domain(d3.extent(data, d => d.date));
+  y_focus_scale = y_focus_scale.domain([
+    -d3.max(data, d => d.values[1]),
+    d3.max(data, d => d.values[1])
+  ]);
+  area = d3
+    .area()
+    .curve(d3.curveLinear)
+    .x(d => x_focus_scale(d.date))
+    .y0(d => y_focus_scale(d.values[0]))
+    .y1(d => y_focus_scale(d.values[1]));
+  d3
+    .select("#focus")
+    .append("g")
+    .selectAll("path")
+    .data([...multimap(data.slice(1, 74).map(d => [d.name, d]))])
+    .enter()
+    .append("path")
+    .attr("fill", ([name]) => color(name))
+    .attr("d", ([, values]) => area(values))
+    .append("title")
+    .text(([name]) => name);
+  d3
+    .select("#focus")
+    .append("g")
+    .selectAll("path")
+    .data([...multimap(data.slice(148, 222).map(d => [d.name, d]))])
+    .enter()
+    .append("path")
+    .attr("fill", ([name]) => color(name))
+    .attr("d", ([, values]) => area(values))
+    .append("title")
+    .text(([name]) => name);
+  focus_data = [];
+  context_data.map(parent => {
+    parent.children.map(child => {
+      focus_data.push(
+        child.counts.slice(73, 149).map(count => {
+          return {
+            ...count,
+            value: count.count,
+            name: child.name
+          };
+        })
+      );
+    });
+  });
+  focus_data = focus_data.flat();
+  focus_data = get_stack(focus_data);
+  color = d3
+    .scaleOrdinal(d3.schemeCategory10)
+    .domain(focus_data.map(d => d.name));
+  d3
+    .select("#focus")
+    .append("g")
+    .selectAll("path")
+    .data([...multimap(focus_data.map(d => [d.name, d]))])
+    .enter()
+    .append("path")
+    .attr("fill", ([name]) => color(name))
+    .attr("d", ([, values]) => area(values))
+    .append("title")
+    .text(([name]) => name);
 }
 
 function create_hierarchy_manager() {
   // TODO: Ryan
-  context_data = music_series;
+  context_data = [music_series];
   focus_data = music_series.children;
 }
