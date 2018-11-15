@@ -291,13 +291,15 @@ function get_all_count_data(node, all_count_data) {
 
 function create_svg() {
   var width = 800, height = 800;
-  var focus_height = 600;
+  var focus_height = 500;
   var pad = 30;
-  var context_height = height - focus_height - pad;
+  var context_height = height - focus_height - 2 * pad;
   x_context_scale = d3.scaleTime().range([0, width]);
   y_context_scale = d3.scaleLinear().range([context_height, 0]);
   x_focus_scale = d3.scaleTime().range([0, width]);
   y_focus_scale = d3.scaleLinear().range([focus_height, 0]);
+  x_context_axis = d3.axisBottom(x_context_scale);
+
   d3.select("body").append("svg").attr("width", width).attr("height", height);
   d3.select("svg").append("g").attr("id", "focus");
   d3
@@ -314,22 +316,10 @@ function create_svg() {
     .attr("opacity", 0.1);
 
   d3
-    .select("#focus")
-    .selectAll(".first")
-    .data(["left", "middle", "right"])
-    .enter()
-    .append("g")
-    .attr("transform", (d, i) => "translate(" + width / 3 * i + "," + 0 + ")")
-    .attr("id", d => d);
-
-  d3.select("#left").attr("class", "first");
-  d3.select("#right").attr("class", "first");
-
-  d3
     .select("#context")
     .append("rect")
     .attr("width", width)
-    .attr("height", height - focus_height - pad)
+    .attr("height", context_height)
     .attr("fill", "#999999")
     .attr("opacity", 0.1);
 
@@ -414,6 +404,11 @@ function create_context_streamgraph() {
     .attr("d", ([, values]) => area(values))
     .append("title")
     .text(([name]) => name);
+  d3
+    .select("#focus")
+    .append("g")
+    .call(d3.axisBottom(x_context_scale))
+    .attr("transform", "translate(" + 0 + "," + 500 + ")");
 }
 
 function create_focus_steamgraph() {
@@ -478,9 +473,9 @@ function create_focus_steamgraph() {
     .enter()
     .append("path")
     .attr("fill", ([name]) => color(name))
-    .attr("d", ([, values]) => area(values))
-    .append("title")
-    .text(([name]) => name);
+    .attr("d", ([, values]) => area(values));
+  // .append("title")
+  // .text(([name]) => name);
 }
 
 function create_hierarchy_manager() {
