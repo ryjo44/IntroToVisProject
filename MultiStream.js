@@ -293,6 +293,8 @@ function create_svg() {
   var focus_height = 600;
   var pad = 30;
   var context_height = height - focus_height - pad;
+  x_context_scale = d3.scaleTime().range([0, width]);
+  y_context_scale = d3.scaleLinear().range([context_height, 0]);
   d3.select("body").append("svg").attr("width", width).attr("height", height);
   d3.select("svg").append("g").attr("id", "focus");
   d3
@@ -369,6 +371,26 @@ function create_context_streamgraph() {
       d.data.get(layer.key).values = [d[0], d[1]];
     }
   }
+  x_context_scale = x_context_scale.domain(d3.extent(data, d => d.date));
+  y_context_scale = y_context_scale.domain([-(d3.max(data, d => d.values[1])), d3.max(data, d => d.values[1])]);
+  color = d3.scaleOrdinal(d3.schemeCategory10).domain(data.map(d => d.name));
+  area = d3
+    .area()
+    .curve(d3.curveLinear)
+    .x(d => x_context_scale(d.date))
+    .y0(d => y_context_scale(d.values[0]))
+    .y1(d => y_context_scale(d.values[1]));
+  d3
+    .select("#context")
+    .append("g")
+    .selectAll("path")
+    .data([...multimap(data.map(d => [d.name, d]))])
+    .enter()
+    .append("path")
+    .attr("fill", ([name]) => color(name))
+    .attr("d", ([, values]) => area(values))
+    .append("title")
+    .text(([name]) => name);
 }
 
 function create_focus_steamgraph() {
