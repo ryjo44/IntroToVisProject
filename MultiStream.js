@@ -290,41 +290,63 @@ function get_all_count_data(node, all_count_data) {
 }
 
 function create_svg() {
-  var width = 800, height = 800;
+  var manager_width = 600,
+    manager_height = 800;
+  var streamgraph_width = 800,
+    streamgraph_height = 800;
   var focus_height = 500;
   var pad = 30;
-  var context_height = height - focus_height - 2 * pad;
-  x_context_scale = d3.scaleTime().range([0, width]);
+  var context_height = streamgraph_height - focus_height - 2 * pad;
+  x_context_scale = d3.scaleTime().range([0, streamgraph_width]);
   y_context_scale = d3.scaleLinear().range([context_height, 0]);
-  x_focus_scale = d3.scaleTime().range([0, width]);
+  x_focus_scale = d3.scaleTime().range([0, streamgraph_width]);
   y_focus_scale = d3.scaleLinear().range([focus_height, 0]);
   x_context_axis = d3.axisBottom(x_context_scale);
 
-  d3.select("body").append("svg").attr("width", width).attr("height", height);
-  d3.select("svg").append("g").attr("id", "focus");
-  d3
-    .select("svg")
+  d3.select("body")
+    .append("svg")
+    .attr("width", streamgraph_width + manager_width)
+    .attr("height", streamgraph_height + manager_height);
+  d3.select("svg")
     .append("g")
-    .attr("transform", "translate(" + 0 + "," + (pad + focus_height) + ")")
-    .attr("id", "context");
-  d3
-    .select("#focus")
+    .attr("id", "focus")
+    .attr("transform", "translate(" + (2 * pad + manager_width) + ", 0)");
+  d3.select("svg")
+    .append("g")
+    .attr("id", "context")
+    .attr(
+      "transform",
+      "translate(" +
+        (2 * pad + manager_width) +
+        "," +
+        (pad + focus_height) +
+        ")"
+    );
+  d3.select("svg")
+    .append("g")
+    .attr("id", "manager")
+    .attr("transform", "translate(" + pad + ",0)");
+
+  d3.select("#focus")
     .append("rect")
-    .attr("width", width)
+    .attr("width", streamgraph_width)
     .attr("height", focus_height)
     .attr("fill", "#999999")
     .attr("opacity", 0.1);
 
-  d3
-    .select("#context")
+  d3.select("#context")
     .append("rect")
-    .attr("width", width)
+    .attr("width", streamgraph_width)
     .attr("height", context_height)
     .attr("fill", "#999999")
     .attr("opacity", 0.1);
 
-  // TODO: Ryan
-  // add svg element for hierarchy manager
+  d3.select("#manager")
+    .append("rect")
+    .attr("width", manager_width)
+    .attr("height", manager_height)
+    .attr("fill", "#999999")
+    .attr("opacity", 0.1);
 }
 
 function multimap(
@@ -393,8 +415,7 @@ function create_context_streamgraph() {
     .x(d => x_context_scale(d.date))
     .y0(d => y_context_scale(d.values[0]))
     .y1(d => y_context_scale(d.values[1]));
-  d3
-    .select("#context")
+  d3.select("#context")
     .append("g")
     .selectAll("path")
     .data([...multimap(data.map(d => [d.name, d]))])
@@ -404,8 +425,7 @@ function create_context_streamgraph() {
     .attr("d", ([, values]) => area(values))
     .append("title")
     .text(([name]) => name);
-  d3
-    .select("#focus")
+  d3.select("#focus")
     .append("g")
     .call(d3.axisBottom(x_context_scale))
     .attr("transform", "translate(" + 0 + "," + 500 + ")");
@@ -424,8 +444,7 @@ function create_focus_steamgraph() {
     .x(d => x_focus_scale(d.date))
     .y0(d => y_focus_scale(d.values[0]))
     .y1(d => y_focus_scale(d.values[1]));
-  d3
-    .select("#focus")
+  d3.select("#focus")
     .append("g")
     .selectAll("path")
     .data([...multimap(data.slice(1, 74).map(d => [d.name, d]))])
@@ -435,8 +454,7 @@ function create_focus_steamgraph() {
     .attr("d", ([, values]) => area(values))
     .append("title")
     .text(([name]) => name);
-  d3
-    .select("#focus")
+  d3.select("#focus")
     .append("g")
     .selectAll("path")
     .data([...multimap(data.slice(148, 222).map(d => [d.name, d]))])
@@ -465,8 +483,7 @@ function create_focus_steamgraph() {
   color = d3
     .scaleOrdinal(d3.schemeCategory10)
     .domain(focus_data.map(d => d.name));
-  d3
-    .select("#focus")
+  d3.select("#focus")
     .append("g")
     .selectAll("path")
     .data([...multimap(focus_data.map(d => [d.name, d]))])
