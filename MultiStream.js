@@ -499,4 +499,83 @@ function create_hierarchy_manager() {
   // TODO: Ryan
   context_data = [music_series];
   focus_data = music_series.children;
+
+  // vars describing hierarchy manager size
+  var pad = 30,
+    manager_width = 600,
+    manager_height = 800;
+
+  // create band scale for horizontal placement
+  // of nodes
+  var max_depth = 3;
+  var depth_inds = [];
+  for (var i = 0; i < max_depth; i++) {
+    depth_inds.push(i);
+  }
+  var depth_band = d3
+    .scaleBand()
+    .domain(depth_inds)
+    .range([pad, manager_width - pad]);
+
+  // TODO: Function to generate x/y values
+  function generateCoords(node, parent_lower, parent_upper, depth) {
+    if (typeof node.children == 'undefined') {
+      return;
+    }
+  }
+  music_series.x = pad;
+  music_series.y = manager_height / 2;
+  generateCoords(music_series, manager_height, 0, 0)
+
+  // create horizontal link scale
+  var horizontal_link = d3
+    .linkHorizontal()
+    .x(d => d.x)
+    .y(d => d.y);
+
+  // nested data joins to add nodes and links
+  d3.select("#manager")
+    .selectAll("nodes")
+    .data([music_series])
+    .enter()
+    .append("g")
+    .attr("class", "depth0");
+
+  for (var i = 0; i < max_depth; i++) {
+    d3.selectAll((".depth" + i))
+      .selectAll("nodes")
+      .data(d => d.children)
+      .enter()
+      .append('g')
+      .attr("class", ("depth" + (i + 1)));
+
+    d3.selectAll((".depth" + (i + 1)))
+      .append("path")
+      .attr("d", d => horizontal_link(d))
+      .attr("fill", "none")
+      .attr("stroke", "#666666")
+      .attr("opacity", 1.0)
+      .attr("stroke-width", 1);
+  }
+
+  d3.selectAll(".depth0")
+    .append("circle")
+    .attr("cx", d => d.x)
+    .attr("cy", d => d.y)
+    .attr("r", 4)
+    .attr("fill", "#999999")
+    .attr("stroke", "#444444")
+    .attr("stroke-width", "1")
+    .attr("opacity", 1.0);
+  for (var i = 0; i < max_depth; i++) {
+    d3.selectAll((".depth" + (i + 1)))
+      .append("circle")
+      .attr("cx", d => d.x)
+      .attr("cy", d => d.y)
+      .attr("r", 4)
+      .attr("fill", "#999999")
+      .attr("stroke", "#444444")
+      .attr("stroke-width", "1")
+      .attr("opacity", 1.0);
+  }
 }
