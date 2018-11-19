@@ -516,8 +516,46 @@ function create_focus_steamgraph() {
         .attr("opacity", function(d, j) {
           return j != i ? 0.6 : 1;
         });
+    })
+    .on("mousemove", function(d, i) {
+      mousex = d3.mouse(this);
+      mousex = mousex[0];
+      var invertedx = x_focus_scale.invert(mousex);
+      var selected = d[1];
+      var closest = selected[0];
+      for (var k = 0; k < selected.length; k++) {
+        if (
+          Math.abs(selected[k].date.getTime() - invertedx.getTime()) <
+          Math.abs(closest.date.getTime() - invertedx.getTime())
+        ) {
+          closest = selected[k];
+        }
+      }
+      // d3
+      //   .select(this)
+      //   .classed("hover", true)
+      //   .attr("stroke", strokecolor)
+      //   .attr(
+      //     "stroke-width",
+      //     "0.5px"
+      //   ), tooltip.html("<p>" + d.key + "<br>" + pro + "</p>").style("visibility", "visible");
+    })
+    .on("mouseout", function(d, i) {
+      d3
+        .select("#focus")
+        .selectAll(".layer")
+        .transition()
+        .duration(250)
+        .attr("opacity", "1");
+      // d3
+      //   .select(this)
+      //   .classed("hover", false)
+      //   .attr(
+      //     "stroke-width",
+      //     "0px"
+      //   ), tooltip.html("<p>" + d.key + "<br>" + pro + "</p>").style("visibility", "hidden");
     });
-  console.log([...multimap(focus_data.map(d => [d.name, d]))]);
+  // console.log([...multimap(focus_data.map(d => [d.name, d]))]);
   // .append("title")
   // .text(([name]) => name);
 }
