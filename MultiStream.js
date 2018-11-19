@@ -490,6 +490,12 @@ function create_focus_steamgraph() {
   });
   focus_data = focus_data.flat();
   focus_data = get_stack(focus_data);
+  // Define the div for the tooltip
+  var div = d3
+    .select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
   color = d3
     .scaleOrdinal(d3.schemeCategory10)
     .domain(focus_data.map(d => d.name));
@@ -531,14 +537,11 @@ function create_focus_steamgraph() {
           closest = selected[k];
         }
       }
-      // d3
-      //   .select(this)
-      //   .classed("hover", true)
-      //   .attr("stroke", strokecolor)
-      //   .attr(
-      //     "stroke-width",
-      //     "0.5px"
-      //   ), tooltip.html("<p>" + d.key + "<br>" + pro + "</p>").style("visibility", "visible");
+      div.transition().duration(200).style("opacity", 0.9);
+      div
+        .html(Math.floor(closest.value))
+        .style("left", d3.event.pageX + "px")
+        .style("top", d3.event.pageY - 28 + "px");
     })
     .on("mouseout", function(d, i) {
       d3
@@ -547,17 +550,8 @@ function create_focus_steamgraph() {
         .transition()
         .duration(250)
         .attr("opacity", "1");
-      // d3
-      //   .select(this)
-      //   .classed("hover", false)
-      //   .attr(
-      //     "stroke-width",
-      //     "0px"
-      //   ), tooltip.html("<p>" + d.key + "<br>" + pro + "</p>").style("visibility", "hidden");
+      div.transition().duration(500).style("opacity", 0);
     });
-  // console.log([...multimap(focus_data.map(d => [d.name, d]))]);
-  // .append("title")
-  // .text(([name]) => name);
 }
 
 function create_hierarchy_manager() {
