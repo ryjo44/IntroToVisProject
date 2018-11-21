@@ -439,7 +439,11 @@ function create_context_streamgraph() {
 }
 
 function create_focus_steamgraph() {
-  // TODO
+  var div = d3
+    .select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
   x_focus_scale = x_focus_scale.domain(d3.extent(data, d => d.date));
   y_focus_scale = y_focus_scale.domain([
     -d3.max(data, d => d.values[1]),
@@ -455,13 +459,11 @@ function create_focus_steamgraph() {
     .select("#focus")
     .append("g")
     .selectAll("path")
-    .data([...multimap(data.slice(1, 74).map(d => [d.name, d]))])
+    .data([...multimap(data.slice(0, 74).map(d => [d.name, d]))])
     .enter()
     .append("path")
     .attr("fill", ([name]) => color(name))
-    .attr("d", ([, values]) => area(values))
-    .append("title")
-    .text(([name]) => name);
+    .attr("d", ([, values]) => area(values));
 
   d3
     .select("#focus")
@@ -471,9 +473,7 @@ function create_focus_steamgraph() {
     .enter()
     .append("path")
     .attr("fill", ([name]) => color(name))
-    .attr("d", ([, values]) => area(values))
-    .append("title")
-    .text(([name]) => name);
+    .attr("d", ([, values]) => area(values));
   focus_data = [];
   context_data.map(parent => {
     parent.children.map(child => {
@@ -491,11 +491,7 @@ function create_focus_steamgraph() {
   focus_data = focus_data.flat();
   focus_data = get_stack(focus_data);
   // Define the div for the tooltip
-  var div = d3
-    .select("body")
-    .append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0);
+
   color = d3
     .scaleOrdinal(d3.schemeCategory10)
     .domain(focus_data.map(d => d.name));
@@ -508,11 +504,11 @@ function create_focus_steamgraph() {
     .append("path")
     .attr("fill", ([name]) => color(name))
     .attr("d", ([, values]) => area(values))
-    .attr("class", "path");
+    .attr("class", "path")
+    .attr("opacity", 1);
   d3
     .select("#focus")
-    .selectAll(".path")
-    .attr("opacity", 1)
+    .selectAll("path")
     .on("mouseover", function(d, i) {
       d3
         .select("#focus")
