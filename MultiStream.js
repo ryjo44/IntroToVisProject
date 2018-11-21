@@ -509,14 +509,14 @@ function create_focus_steamgraph() {
   d3
     .select("#focus")
     .selectAll("path")
-    .on("mouseover", function(d, i) {
+    .on("mouseover", function(d1, i) {
       d3
         .select("#focus")
         .selectAll(".path")
         .transition()
         .duration(250)
-        .attr("opacity", function(d, j) {
-          return j != i ? 0.6 : 1;
+        .attr("opacity", function(d2, j) {
+          return d1 !== d2 ? 0.6 : 1;
         });
     })
     .on("mousemove", function(d, i) {
@@ -533,9 +533,16 @@ function create_focus_steamgraph() {
           closest = selected[k];
         }
       }
+      console.log(closest);
       div.transition().duration(200).style("opacity", 0.9);
       div
-        .html(Math.floor(closest.value))
+        .html(
+          closest.name +
+            "</br>" +
+            Math.floor(closest.value) +
+            "</br>" +
+            closest.date.toDateString()
+        )
         .style("left", d3.event.pageX + "px")
         .style("top", d3.event.pageY - 28 + "px");
     })
