@@ -512,11 +512,13 @@ function create_hierarchy_manager() {
   var depth_band = d3
     .scaleBand()
     .domain(depth_inds)
-    .range([pad, manager_width - pad]);
+    .range([0, 2 * manager_width - 2*pad]);
 
-  // TODO: Function to generate x/y values
+  // TODO: Function to generate x/y
+
+  // TODO: add source/target
   function generateCoords(node, parent_lower, parent_upper, depth) {
-    if (node.children.length == 0) {  
+    if (node.children.length == 0) {
       return;
     }
 
@@ -536,6 +538,8 @@ function create_hierarchy_manager() {
 
       node.children[i].x = n_x;
       node.children[i].y = n_y;
+      node.children[i].source = node;
+      node.children[i].target = node.children[i];
 
       var n_y_lower = scale_band(i);
       var n_y_upper = scale_band(i) + scale_band.bandwidth();
@@ -549,7 +553,10 @@ function create_hierarchy_manager() {
   // create horizontal link scale
   var horizontal_link = d3
     .linkHorizontal()
-    .x(d => d.x)
+    .x(d => {
+      console.log(d);
+      return d.x;
+    })
     .y(d => d.y);
 
   // nested data joins to add nodes and links
