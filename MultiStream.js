@@ -512,11 +512,8 @@ function create_hierarchy_manager() {
   var depth_band = d3
     .scaleBand()
     .domain(depth_inds)
-    .range([0, 2 * manager_width - 2*pad]);
+    .range([0, 2 * manager_width - 2 * pad]);
 
-  // TODO: Function to generate x/y
-
-  // TODO: add source/target
   function generateCoords(node, parent_lower, parent_upper, depth) {
     if (node.children.length == 0) {
       return;
