@@ -31,9 +31,6 @@ function csv_add_parent_links(node) {
   }
 }
 
-// TODO: Ryan
-// Figure out how to perform aggregation with each leaf node
-// having a different set of dates
 function csv_aggregate_counts(node) {
   // Check if in leaf node
   if (typeof node.values == "undefined") {
@@ -290,8 +287,10 @@ function get_all_count_data(node, all_count_data) {
 }
 
 function create_svg() {
-  var manager_width = 600, manager_height = 800;
-  var streamgraph_width = 800, streamgraph_height = 800;
+  var manager_width = 600,
+    manager_height = 800;
+  var streamgraph_width = 800,
+    streamgraph_height = 800;
   var focus_height = 500;
   var pad = 30;
   var context_height = streamgraph_height - focus_height - 2 * pad;
@@ -301,18 +300,15 @@ function create_svg() {
   y_focus_scale = d3.scaleLinear().range([focus_height, 0]);
   x_context_axis = d3.axisBottom(x_context_scale);
 
-  d3
-    .select("body")
+  d3.select("body")
     .append("svg")
     .attr("width", streamgraph_width + manager_width)
     .attr("height", streamgraph_height + manager_height);
-  d3
-    .select("svg")
+  d3.select("svg")
     .append("g")
     .attr("id", "focus")
     .attr("transform", "translate(" + (2 * pad + manager_width) + ", 0)");
-  d3
-    .select("svg")
+  d3.select("svg")
     .append("g")
     .attr("id", "context")
     .attr(
@@ -323,30 +319,26 @@ function create_svg() {
         (pad + focus_height) +
         ")"
     );
-  d3
-    .select("svg")
+  d3.select("svg")
     .append("g")
     .attr("id", "manager")
     .attr("transform", "translate(" + pad + ",0)");
 
-  d3
-    .select("#focus")
+  d3.select("#focus")
     .append("rect")
     .attr("width", streamgraph_width)
     .attr("height", focus_height)
     .attr("fill", "#999999")
     .attr("opacity", 0.1);
 
-  d3
-    .select("#context")
+  d3.select("#context")
     .append("rect")
     .attr("width", streamgraph_width)
     .attr("height", context_height)
     .attr("fill", "#999999")
     .attr("opacity", 0.1);
 
-  d3
-    .select("#manager")
+  d3.select("#manager")
     .append("rect")
     .attr("width", manager_width)
     .attr("height", manager_height)
@@ -420,8 +412,7 @@ function create_context_streamgraph() {
     .x(d => x_context_scale(d.date))
     .y0(d => y_context_scale(d.values[0]))
     .y1(d => y_context_scale(d.values[1]));
-  d3
-    .select("#context")
+  d3.select("#context")
     .append("g")
     .selectAll("path")
     .data([...multimap(data.map(d => [d.name, d]))])
@@ -431,19 +422,14 @@ function create_context_streamgraph() {
     .attr("d", ([, values]) => area(values))
     .append("title")
     .text(([name]) => name);
-  d3
-    .select("#focus")
+  d3.select("#focus")
     .append("g")
     .call(d3.axisBottom(x_context_scale))
     .attr("transform", "translate(" + 0 + "," + 500 + ")");
 }
 
 function create_focus_steamgraph() {
-  var div = d3
-    .select("body")
-    .append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0);
+  // TODO
   x_focus_scale = x_focus_scale.domain(d3.extent(data, d => d.date));
   y_focus_scale = y_focus_scale.domain([
     -d3.max(data, d => d.values[1]),
@@ -455,25 +441,26 @@ function create_focus_steamgraph() {
     .x(d => x_focus_scale(d.date))
     .y0(d => y_focus_scale(d.values[0]))
     .y1(d => y_focus_scale(d.values[1]));
-  d3
-    .select("#focus")
+  d3.select("#focus")
     .append("g")
     .selectAll("path")
-    .data([...multimap(data.slice(0, 74).map(d => [d.name, d]))])
+    .data([...multimap(data.slice(1, 74).map(d => [d.name, d]))])
     .enter()
     .append("path")
     .attr("fill", ([name]) => color(name))
-    .attr("d", ([, values]) => area(values));
-
-  d3
-    .select("#focus")
+    .attr("d", ([, values]) => area(values))
+    .append("title")
+    .text(([name]) => name);
+  d3.select("#focus")
     .append("g")
     .selectAll("path")
     .data([...multimap(data.slice(148, 222).map(d => [d.name, d]))])
     .enter()
     .append("path")
     .attr("fill", ([name]) => color(name))
-    .attr("d", ([, values]) => area(values));
+    .attr("d", ([, values]) => area(values))
+    .append("title")
+    .text(([name]) => name);
   focus_data = [];
   context_data.map(parent => {
     parent.children.map(child => {
@@ -490,71 +477,19 @@ function create_focus_steamgraph() {
   });
   focus_data = focus_data.flat();
   focus_data = get_stack(focus_data);
-  // Define the div for the tooltip
-
   color = d3
     .scaleOrdinal(d3.schemeCategory10)
     .domain(focus_data.map(d => d.name));
-  d3
-    .select("#focus")
+  d3.select("#focus")
     .append("g")
     .selectAll("path")
     .data([...multimap(focus_data.map(d => [d.name, d]))])
     .enter()
     .append("path")
     .attr("fill", ([name]) => color(name))
-    .attr("d", ([, values]) => area(values))
-    .attr("class", "path")
-    .attr("opacity", 1);
-  d3
-    .select("#focus")
-    .selectAll("path")
-    .on("mouseover", function(d1, i) {
-      d3
-        .select("#focus")
-        .selectAll(".path")
-        .transition()
-        .duration(250)
-        .attr("opacity", function(d2, j) {
-          return d1 !== d2 ? 0.6 : 1;
-        });
-    })
-    .on("mousemove", function(d, i) {
-      mousex = d3.mouse(this);
-      mousex = mousex[0];
-      var invertedx = x_focus_scale.invert(mousex);
-      var selected = d[1];
-      var closest = selected[0];
-      for (var k = 0; k < selected.length; k++) {
-        if (
-          Math.abs(selected[k].date.getTime() - invertedx.getTime()) <
-          Math.abs(closest.date.getTime() - invertedx.getTime())
-        ) {
-          closest = selected[k];
-        }
-      }
-      console.log(closest);
-      div.transition().duration(200).style("opacity", 0.9);
-      div
-        .html(
-          closest.name +
-            "</br>" +
-            Math.floor(closest.value) +
-            "</br>" +
-            closest.date.toDateString()
-        )
-        .style("left", d3.event.pageX + "px")
-        .style("top", d3.event.pageY - 28 + "px");
-    })
-    .on("mouseout", function(d, i) {
-      d3
-        .select("#focus")
-        .selectAll(".layer")
-        .transition()
-        .duration(250)
-        .attr("opacity", "1");
-      div.transition().duration(500).style("opacity", 0);
-    });
+    .attr("d", ([, values]) => area(values));
+  // .append("title")
+  // .text(([name]) => name);
 }
 
 function create_hierarchy_manager() {
@@ -563,7 +498,9 @@ function create_hierarchy_manager() {
   focus_data = music_series.children;
 
   // vars describing hierarchy manager size
-  var pad = 30, manager_width = 600, manager_height = 800;
+  var pad = 30,
+    manager_width = 600,
+    manager_height = 800;
 
   // create band scale for horizontal placement
   // of nodes
@@ -578,64 +515,86 @@ function create_hierarchy_manager() {
     .range([pad, manager_width - pad]);
 
   // TODO: Function to generate x/y values
-  // function generateCoords(node, parent_lower, parent_upper, depth) {
-  //   if (typeof node.children == 'undefined') {
-  //     return;
-  //   }
-  // }
-  // music_series.x = pad;
-  // music_series.y = manager_height / 2;
-  // generateCoords(music_series, manager_height, 0, 0)
-  //
-  // // create horizontal link scale
-  // var horizontal_link = d3
-  //   .linkHorizontal()
-  //   .x(d => d.x)
-  //   .y(d => d.y);
-  //
-  // // nested data joins to add nodes and links
-  // d3.select("#manager")
-  //   .selectAll("nodes")
-  //   .data([music_series])
-  //   .enter()
-  //   .append("g")
-  //   .attr("class", "depth0");
-  //
-  // for (var i = 0; i < max_depth; i++) {
-  //   d3.selectAll((".depth" + i))
-  //     .selectAll("nodes")
-  //     .data(d => d.children)
-  //     .enter()
-  //     .append('g')
-  //     .attr("class", ("depth" + (i + 1)));
-  //
-  //   d3.selectAll((".depth" + (i + 1)))
-  //     .append("path")
-  //     .attr("d", d => horizontal_link(d))
-  //     .attr("fill", "none")
-  //     .attr("stroke", "#666666")
-  //     .attr("opacity", 1.0)
-  //     .attr("stroke-width", 1);
-  // }
-  //
-  // d3.selectAll(".depth0")
-  //   .append("circle")
-  //   .attr("cx", d => d.x)
-  //   .attr("cy", d => d.y)
-  //   .attr("r", 4)
-  //   .attr("fill", "#999999")
-  //   .attr("stroke", "#444444")
-  //   .attr("stroke-width", "1")
-  //   .attr("opacity", 1.0);
-  // for (var i = 0; i < max_depth; i++) {
-  //   d3.selectAll((".depth" + (i + 1)))
-  //     .append("circle")
-  //     .attr("cx", d => d.x)
-  //     .attr("cy", d => d.y)
-  //     .attr("r", 4)
-  //     .attr("fill", "#999999")
-  //     .attr("stroke", "#444444")
-  //     .attr("stroke-width", "1")
-  //     .attr("opacity", 1.0);
-  // }
+  function generateCoords(node, parent_lower, parent_upper, depth) {
+    if (node.children.length == 0) {  
+      return;
+    }
+
+    var node_inds = [];
+    for (var i = 0; i < node.children.length; i++) {
+      node_inds.push(i);
+    }
+
+    var scale_band = d3
+      .scaleBand()
+      .domain(node_inds)
+      .range([parent_lower, parent_upper]);
+
+    for (var i = 0; i < node.children.length; i++) {
+      var n_x = depth_band(depth) + depth_band.bandwidth() / 2;
+      var n_y = scale_band(i) + scale_band.bandwidth() / 2;
+
+      node.children[i].x = n_x;
+      node.children[i].y = n_y;
+
+      var n_y_lower = scale_band(i);
+      var n_y_upper = scale_band(i) + scale_band.bandwidth();
+      generateCoords(node.children[i], n_y_lower, n_y_upper, depth + 1);
+    }
+  }
+  music_series.x = pad;
+  music_series.y = manager_height / 2;
+  generateCoords(music_series, manager_height, 0, 0);
+
+  // create horizontal link scale
+  var horizontal_link = d3
+    .linkHorizontal()
+    .x(d => d.x)
+    .y(d => d.y);
+
+  // nested data joins to add nodes and links
+  d3.select("#manager")
+    .selectAll("nodes")
+    .data([music_series])
+    .enter()
+    .append("g")
+    .attr("class", "depth0");
+
+  for (var i = 0; i < max_depth; i++) {
+    d3.selectAll(".depth" + i)
+      .selectAll("nodes")
+      .data(d => d.children)
+      .enter()
+      .append("g")
+      .attr("class", "depth" + (i + 1));
+
+    d3.selectAll(".depth" + (i + 1))
+      .append("path")
+      .attr("d", d => horizontal_link(d))
+      .attr("fill", "none")
+      .attr("stroke", "#666666")
+      .attr("opacity", 1.0)
+      .attr("stroke-width", 1);
+  }
+
+  d3.selectAll(".depth0")
+    .append("circle")
+    .attr("cx", d => d.x)
+    .attr("cy", d => d.y)
+    .attr("r", 4)
+    .attr("fill", "#999999")
+    .attr("stroke", "#444444")
+    .attr("stroke-width", "1")
+    .attr("opacity", 1.0);
+  for (var i = 0; i < max_depth; i++) {
+    d3.selectAll(".depth" + (i + 1))
+      .append("circle")
+      .attr("cx", d => d.x)
+      .attr("cy", d => d.y)
+      .attr("r", 4)
+      .attr("fill", "#999999")
+      .attr("stroke", "#444444")
+      .attr("stroke-width", "1")
+      .attr("opacity", 1.0);
+  }
 }
