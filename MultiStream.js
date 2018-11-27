@@ -111,11 +111,11 @@ function csv_get_all_count_data(node, all_count_data) {
 }
 
 function csv_add_fields(node) {
-  node.name = node.key
-  node.children = node.values
+  node.name = node.key;
+  node.children = node.values;
   if (typeof node.children != "undefined") {
     for (var i = 0; i < node.children.length; i++) {
-      csv_add_fields(node.children[i])
+      csv_add_fields(node.children[i]);
     }
   }
 }
@@ -145,7 +145,7 @@ async function countryDat() {
   visaCountry.parent = null;
   csv_create_color(visaCountry);
   csv_aggregate_counts(visaCountry);
-  csv_add_fields(visaCountry)
+  csv_add_fields(visaCountry);
 }
 countryDat();
 
@@ -546,10 +546,7 @@ function create_hierarchy_manager() {
   // create horizontal link scale
   var horizontal_link = d3
     .linkHorizontal()
-    .x(d => {
-      console.log(d);
-      return d.x;
-    })
+    .x(d => d.x)
     .y(d => d.y);
 
   // nested data joins to add nodes and links
@@ -587,7 +584,7 @@ function create_hierarchy_manager() {
     .attr("stroke-width", "1")
     .attr("opacity", 1.0)
     .append("title")
-    .text(d=>d.name);
+    .text(d => d.name);
   for (var i = 0; i < max_depth; i++) {
     d3.selectAll(".depth" + (i + 1))
       .append("circle")
@@ -598,7 +595,7 @@ function create_hierarchy_manager() {
       .attr("stroke", "#444444")
       .attr("stroke-width", "1")
       .attr("opacity", 1.0)
-      .append('title')
-      .text(d=>d.name);
+      .append("title")
+      .text(d => d.name);
   }
 }
