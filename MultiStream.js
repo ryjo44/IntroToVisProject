@@ -110,6 +110,16 @@ function csv_get_all_count_data(node, all_count_data) {
   }
 }
 
+function csv_add_fields(node) {
+  node.name = node.key
+  node.children = node.values
+  if (typeof node.children != "undefined") {
+    for (var i = 0; i < node.children.length; i++) {
+      csv_add_fields(node.children[i])
+    }
+  }
+}
+
 // Visa data by applicant country of origin
 var visaCountry;
 async function countryDat() {
@@ -135,6 +145,7 @@ async function countryDat() {
   visaCountry.parent = null;
   csv_create_color(visaCountry);
   csv_aggregate_counts(visaCountry);
+  csv_add_fields(visaCountry)
 }
 countryDat();
 
@@ -161,20 +172,7 @@ async function employerDat() {
   visaEmployer.parent = null;
   csv_create_color(visaEmployer);
   csv_aggregate_counts(visaEmployer);
-
-  visaEmployer = await d3.csv("Visa Data by Employer.csv");
-  visaEmployer = d3
-    .nest()
-    .key(function(d) {
-      return d.all_employers;
-    })
-    .key(function(d) {
-      return d.state;
-    })
-    .key(function(d) {
-      return d.city;
-    })
-    .entries(visaEmployer);
+  csv_add_fields(visaEmployer);
 }
 employerDat();
 
@@ -381,9 +379,7 @@ function get_stack(input) {
   }
   return input;
 }
-// REMEMBER
-// Call create_hierarchy_manager before steamgraphs
-// Steam graph data dependent on state of hierarchy manager
+
 function create_context_streamgraph() {
   //TODO(Ellie)
   data = [];
@@ -487,9 +483,9 @@ function create_focus_steamgraph() {
     .enter()
     .append("path")
     .attr("fill", ([name]) => color(name))
-    .attr("d", ([, values]) => area(values));
-  // .append("title")
-  // .text(([name]) => name);
+    .attr("d", ([, values]) => area(values))
+    .append("title")
+    .text(([name]) => name);
 }
 
 function create_hierarchy_manager() {
