@@ -585,20 +585,24 @@ function create_hierarchy_manager() {
     .append("circle")
     .attr("cx", d => d.x)
     .attr("cy", d => d.y)
-    .attr("r", 4)
+    .attr("r", 6)
     .attr("fill", "#999999")
     .attr("stroke", "#444444")
     .attr("stroke-width", "1")
-    .attr("opacity", 1.0);
+    .attr("opacity", 1.0)
+    .append("title")
+    .text(d=>d.name);
   for (var i = 0; i < max_depth; i++) {
     d3.selectAll(".depth" + (i + 1))
       .append("circle")
       .attr("cx", d => d.x)
       .attr("cy", d => d.y)
-      .attr("r", 4)
+      .attr("r", 6)
       .attr("fill", "#999999")
       .attr("stroke", "#444444")
       .attr("stroke-width", "1")
-      .attr("opacity", 1.0);
+      .attr("opacity", 1.0)
+      .append('title')
+      .text(d=>d.name);
   }
 }
