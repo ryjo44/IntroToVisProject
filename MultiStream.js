@@ -434,11 +434,6 @@ function create_context_streamgraph() {
     .attr("d", ([, values]) => area(values))
     .append("title")
     .text(([name]) => name);
-  d3
-    .select("#focus")
-    .append("g")
-    .call(d3.axisBottom(x_context_scale))
-    .attr("transform", "translate(" + 0 + "," + 500 + ")");
 
   var handle = d3
     .select("#context")
@@ -454,63 +449,144 @@ function create_context_streamgraph() {
       if (d === "first") {
         return "translate(" + 0 + "," + 0 + ")";
       }
-      return "translate(" + (streamgraph_width - 70) + "," + 0 + ")";
+      return "translate(" + (streamgraph_width - 65) + "," + 0 + ")";
+    });
+  d3
+    .select("#context")
+    .append("g")
+    .attr("id", "smallBrushGroup")
+    .selectAll(".smallBrush")
+    .data(["first", "second"])
+    .enter()
+    .append("rect")
+    .attr("class", "smallBrush")
+    .attr("height", context_height)
+    .attr("transform", d => {
+      if (d === "first") {
+        return "translate(" + streamgraph_width / 3 + "," + 0 + ")";
+      }
+      return "translate(" + streamgraph_width / 3 * 2 + "," + 0 + ")";
     });
 
   var bigBrushX1 = 0, bigBrushX2 = streamgraph_width - 70;
   d3.selectAll(".bigBrush").call(
     d3
       .drag()
-      .on("drag", function(d) {
-        if (d === "first") {
-          bigBrushX1 = Math.min(d3.event.x, bigBrushX2 - 20);
-          d3
-            .select(this)
-            .attr("transform", "translate(" + bigBrushX1 + "," + 0 + ")");
-        } else {
-          bigBrushX2 = Math.max(d3.event.x, bigBrushX1 + 20);
-          d3
-            .select(this)
-            .attr("transform", "translate(" + bigBrushX2 + "," + 0 + ")");
-        }
-        var invertedx1 = x_context_scale.invert(bigBrushX1),
-          invertedx2 = x_context_scale.invert(bigBrushX2);
-        var closest = data[0];
-        for (var k = 0; k < data.length; k++) {
-          if (
-            Math.abs(data[k].date.getTime() - invertedx1.getTime()) <
-            Math.abs(closest.date.getTime() - invertedx1.getTime())
-          ) {
-            closest = data[k];
-            cutoff[0] = k;
+      .on(
+        "drag",
+        (ondragstart = function(d) {
+          if (d === "first") {
+            bigBrushX1 = Math.min(
+              d3.event.x,
+              bigBrushX2 - 20,
+              smallBrushX1 - 20
+            );
+            d3
+              .select(this)
+              .attr("transform", "translate(" + bigBrushX1 + "," + 0 + ")");
+          } else {
+            bigBrushX2 = Math.max(
+              d3.event.x,
+              bigBrushX1 + 20,
+              smallBrushX2 + 20
+            );
+            bigBrushX2 = Math.min(bigBrushX2, streamgraph_width - 65);
+            d3
+              .select(this)
+              .attr("transform", "translate(" + bigBrushX2 + "," + 0 + ")");
           }
-        }
-        var closest = data[0];
-        for (var k = 0; k < data.length; k++) {
-          if (
-            Math.abs(data[k].date.getTime() - invertedx2.getTime()) <
-            Math.abs(closest.date.getTime() - invertedx2.getTime())
-          ) {
-            closest = data[k];
-            cutoff[3] = k;
+          var invertedx1 = x_context_scale.invert(bigBrushX1),
+            invertedx2 = x_context_scale.invert(bigBrushX2);
+          var closest = data[0];
+          for (var k = 0; k < data.length; k++) {
+            if (
+              Math.abs(data[k].date.getTime() - invertedx1.getTime()) <
+              Math.abs(closest.date.getTime() - invertedx1.getTime())
+            ) {
+              closest = data[k];
+              cutoff[0] = k - 1;
+            }
           }
-        }
-      })
+          var closest = data[0];
+          for (var k = 0; k < data.length; k++) {
+            if (
+              Math.abs(data[k].date.getTime() - invertedx2.getTime()) <
+              Math.abs(closest.date.getTime() - invertedx2.getTime())
+            ) {
+              closest = data[k];
+              cutoff[3] = k + 1;
+            }
+          }
+        })
+      )
       .on("end", create_focus_steamgraph)
   );
+  var smallBrushX1 = 70, smallBrushX2 = streamgraph_width - 140;
+  d3.selectAll(".smallBrush").call(
+    d3
+      .drag()
+      .on(
+        "drag",
+        (ondragstart2 = function(d) {
+          if (d === "first") {
+            smallBrushX1 = Math.min(d3.event.x, smallBrushX2 - 20);
+            d3
+              .select(this)
+              .attr("transform", "translate(" + smallBrushX1 + "," + 0 + ")");
+          } else {
+            smallBrushX2 = Math.max(d3.event.x, smallBrushX1 + 20);
+            d3
+              .select(this)
+              .attr("transform", "translate(" + smallBrushX2 + "," + 0 + ")");
+          }
+          var invertedx1 = x_context_scale.invert(smallBrushX1),
+            invertedx2 = x_context_scale.invert(smallBrushX2);
+          closest = data[0];
+          for (var k = 0; k < data.length; k++) {
+            if (
+              Math.abs(data[k].date.getTime() - invertedx1.getTime()) <
+              Math.abs(closest.date.getTime() - invertedx1.getTime())
+            ) {
+              closest = data[k];
+              cutoff[1] = k - 1;
+            }
+          }
+          var closest = data[0];
+          for (var k = 0; k < data.length; k++) {
+            if (
+              Math.abs(data[k].date.getTime() - invertedx2.getTime()) <
+              Math.abs(closest.date.getTime() - invertedx2.getTime())
+            ) {
+              closest = data[k];
+              cutoff[2] = k + 1;
+            }
+          }
+        })
+      )
+      .on("end", create_focus_steamgraph)
+  );
+  d3.select("#focus").append("g").attr("id", "x_focus_axis");
 }
 
 function create_focus_steamgraph() {
   d3.select("#focus").selectAll("path").remove();
+
   var div = d3
     .select("body")
     .append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
-  x_focus_scale = x_focus_scale.domain(d3.extent(data, d => d.date));
+  x_focus_scale = x_focus_scale.domain(
+    d3.extent(data.slice(cutoff[0], cutoff[3]), d => d.date)
+  );
+
+  d3
+    .select("#x_focus_axis")
+    .call(d3.axisBottom(x_focus_scale).tickFormat(d3.timeFormat("%Y-%m-%d")))
+    .attr("transform", "translate(" + 0 + "," + 500 + ")");
   y_focus_scale = y_focus_scale.domain([
-    -d3.max(data, d => d.values[1]),
-    d3.max(data, d => d.values[1])
+    -d3.max(data.slice(cutoff[0], cutoff[3]), d => d.values[1]),
+    d3.max(data.slice(cutoff[0], cutoff[3]), d => d.values[1])
   ]);
 
   first_data = data.slice(cutoff[0], cutoff[1]);
@@ -589,7 +665,6 @@ function create_focus_steamgraph() {
       mousex = d3.mouse(this);
       mousex = mousex[0];
       var invertedx = x_focus_scale.invert(mousex);
-      console.log(d);
       var selected = d[1];
       var closest = selected[0];
       for (var k = 0; k < selected.length; k++) {

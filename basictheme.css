@@ -13,9 +13,13 @@ div.tooltip {
 
 .bigBrush {
     width: 3px;
-    background: blue;
+    fill: blue;
 }
 
+.smallBrush {
+    width: 3px;
+    fill: red;
+}
 .track-overlay {
     pointer-events: stroke;
     stroke-width: 50px;
