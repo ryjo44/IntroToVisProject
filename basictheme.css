@@ -10,3 +10,15 @@ div.tooltip {
     border-radius: 8px;
     pointer-events: none;
 }
+
+.bigBrush {
+    width: 3px;
+    background: blue;
+}
+
+.track-overlay {
+    pointer-events: stroke;
+    stroke-width: 50px;
+    stroke: transparent;
+    cursor: crosshair;
+}
