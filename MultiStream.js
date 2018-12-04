@@ -12,6 +12,8 @@ var end_focus;
 ////// READING IN CSV ////////////
 
 // create versions of data prep function for use with key/value pairs
+// adaptations and originals taken from Matthew Berger, Ellie Nguyen,
+// and Ryan Capps implementations from assignment 2
 function csv_data_type_conversion(node) {
   if (typeof node.values != "undefined") {
     for (var c = 0; c < node.values.length; c++)
@@ -703,7 +705,7 @@ function create_focus_steamgraph() {
 
 function create_hierarchy_manager() {
   // TODO: Ryan
-  dataset = music_series
+  dataset = visaCountry;
   context_data = [dataset];
   focus_data = dataset.children;
 
@@ -724,6 +726,8 @@ function create_hierarchy_manager() {
     .domain(depth_inds)
     .range([0, 1.5*manager_width]);
 
+  // function to add x/y values to all nodes
+  // algorithm adapted from example in lecture
   function generateCoords(node, parent_lower, parent_upper, depth) {
     if (node.children.length == 0) {
       return;
