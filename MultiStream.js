@@ -112,11 +112,13 @@ function csv_get_all_count_data(node, all_count_data) {
 
 function csv_add_fields(node) {
   node.name = node.key;
-  node.children = node.values;
-  if (typeof node.children != "undefined") {
+  if (typeof node.values[0].values != "undefined") {
+    node.children = node.values;
     for (var i = 0; i < node.children.length; i++) {
       csv_add_fields(node.children[i]);
     }
+  } else {
+    node.children = [];
   }
 }
 
@@ -701,8 +703,8 @@ function create_focus_steamgraph() {
 
 function create_hierarchy_manager() {
   // TODO: Ryan
-  context_data = [music_series];
-  focus_data = music_series.children;
+  context_data = [visaCountry];
+  focus_data = visaCountry.children;
 
   // vars describing hierarchy manager size
   var pad = 30,
@@ -750,9 +752,9 @@ function create_hierarchy_manager() {
       generateCoords(node.children[i], n_y_lower, n_y_upper, depth + 1);
     }
   }
-  music_series.x = pad;
-  music_series.y = manager_height / 2;
-  generateCoords(music_series, manager_height, 0, 0);
+  visaCountry.x = pad;
+  visaCountry.y = manager_height / 2;
+  generateCoords(visaCountry, manager_height, 0, 0);
 
   // create horizontal link scale
   var horizontal_link = d3
@@ -763,7 +765,7 @@ function create_hierarchy_manager() {
   // nested data joins to add nodes and links
   d3.select("#manager")
     .selectAll("nodes")
-    .data([music_series])
+    .data([visaCountry])
     .enter()
     .append("g")
     .attr("class", "depth0");
