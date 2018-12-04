@@ -703,8 +703,9 @@ function create_focus_steamgraph() {
 
 function create_hierarchy_manager() {
   // TODO: Ryan
-  context_data = [visaCountry];
-  focus_data = visaCountry.children;
+  dataset = music_series
+  context_data = [dataset];
+  focus_data = dataset.children;
 
   // vars describing hierarchy manager size
   var pad = 30,
@@ -752,9 +753,9 @@ function create_hierarchy_manager() {
       generateCoords(node.children[i], n_y_lower, n_y_upper, depth + 1);
     }
   }
-  visaCountry.x = pad;
-  visaCountry.y = manager_height / 2;
-  generateCoords(visaCountry, manager_height, 0, 0);
+  dataset.x = pad;
+  dataset.y = manager_height / 2;
+  generateCoords(dataset, manager_height, 0, 0);
 
   // create horizontal link scale
   var horizontal_link = d3
@@ -765,7 +766,7 @@ function create_hierarchy_manager() {
   // nested data joins to add nodes and links
   d3.select("#manager")
     .selectAll("nodes")
-    .data([visaCountry])
+    .data([dataset])
     .enter()
     .append("g")
     .attr("class", "depth0");
