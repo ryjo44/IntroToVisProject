@@ -2,6 +2,11 @@
 // Description: Implementation of MultiStream technique
 // Author: Ryan Capps and Ellie Nguyen
 
+
+////////// TODO ////////////
+// 1. Finish interaction for hierarchy manager
+// 2. Re-scale focus steamgraph on updated user selection
+
 // Global Variables
 var dataset;
 var focus_data;
@@ -705,7 +710,7 @@ function create_focus_steamgraph() {
 
 function create_hierarchy_manager() {
   // TODO: Ryan
-  dataset = visaCountry;
+  dataset = music_series;
   context_data = [dataset];
   focus_data = dataset.children;
 
@@ -724,7 +729,7 @@ function create_hierarchy_manager() {
   var depth_band = d3
     .scaleBand()
     .domain(depth_inds)
-    .range([0, 1.5*manager_width]);
+    .range([0, 1.5 * manager_width]);
 
   // function to add x/y values to all nodes
   // algorithm adapted from example in lecture
@@ -820,22 +825,22 @@ function create_hierarchy_manager() {
       .attr("stroke-width", "1")
       .attr("opacity", 1.0);
 
-      if (i == 0) {
-        d3.selectAll(".depth" + (i + 1))
-          .append("text")
-          .attr("x", d => d.x)
-          .attr("y", d => d.y-10)
-          .text(d => d.name)
-          .attr("font-size", "12px")
-          .attr("fill", "black")
-      } else {
-        d3.selectAll(".depth" + (i + 1))
-          .append("text")
-          .attr("x", d => d.x+10)
-          .attr("y", d => d.y+5)
-          .text(d => d.name)
-          .attr("font-size", "12px")
-          .attr("fill", "black")
-      }
+    if (i == 0) {
+      d3.selectAll(".depth" + (i + 1))
+        .append("text")
+        .attr("x", d => d.x)
+        .attr("y", d => d.y - 10)
+        .text(d => d.name)
+        .attr("font-size", "12px")
+        .attr("fill", "black");
+    } else {
+      d3.selectAll(".depth" + (i + 1))
+        .append("text")
+        .attr("x", d => d.x + 10)
+        .attr("y", d => d.y + 5)
+        .text(d => d.name)
+        .attr("font-size", "12px")
+        .attr("fill", "black");
+    }
   }
 }
