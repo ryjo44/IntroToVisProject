@@ -2,6 +2,11 @@
 // Description: Implementation of MultiStream technique
 // Author: Ryan Capps and Ellie Nguyen
 
+
+////////// TODO ////////////
+// 1. Finish interaction for hierarchy manager
+// 2. Re-scale focus steamgraph on updated user selection
+
 // Global Variables
 var dataset;
 var focus_data;
@@ -12,6 +17,8 @@ var end_focus;
 ////// READING IN CSV ////////////
 
 // create versions of data prep function for use with key/value pairs
+// adaptations and originals taken from Matthew Berger, Ellie Nguyen,
+// and Ryan Capps implementations from assignment 2
 function csv_data_type_conversion(node) {
   if (typeof node.values != "undefined") {
     for (var c = 0; c < node.values.length; c++)
@@ -721,6 +728,8 @@ function create_hierarchy_manager() {
     .domain(depth_inds)
     .range([0, 1.5 * manager_width]);
 
+  // function to add x/y values to all nodes
+  // algorithm adapted from example in lecture
   function generateCoords(node, parent_lower, parent_upper, depth) {
     if (node.children.length == 0) {
       return;
@@ -817,8 +826,7 @@ function create_hierarchy_manager() {
       .attr("opacity", 1.0);
 
     if (i == 0) {
-      d3
-        .selectAll(".depth" + (i + 1))
+      d3.selectAll(".depth" + (i + 1))
         .append("text")
         .attr("x", d => d.x)
         .attr("y", d => d.y - 10)
@@ -826,8 +834,8 @@ function create_hierarchy_manager() {
         .attr("font-size", "12px")
         .attr("fill", "black");
     } else {
-      d3
-        .selectAll(".depth" + (i + 1))
+
+      d3.selectAll(".depth" + (i + 1))
         .append("text")
         .attr("x", d => d.x + 10)
         .attr("y", d => d.y + 5)
