@@ -2,7 +2,6 @@
 // Description: Implementation of MultiStream technique
 // Author: Ryan Capps and Ellie Nguyen
 
-
 ////////// TODO ////////////
 // 1. Finish interaction for hierarchy manager
 // 2. Re-scale focus steamgraph on updated user selection
@@ -626,18 +625,18 @@ function create_focus_steamgraph() {
     .attr("fill", ([name]) => color(name))
     .attr("d", ([, values]) => area(values));
   focus_data = [];
-  context_data.map(parent => {
-    parent.children.map(child => {
-      focus_data.push(
-        child.counts.slice(cutoff[1], cutoff[2]).map(count => {
-          return {
-            ...count,
-            value: count.count,
-            name: child.name
-          };
-        })
-      );
-    });
+  focus_data1.map(child => {
+    // parent.children.map(child => {
+    focus_data.push(
+      child.counts.slice(cutoff[1], cutoff[2]).map(count => {
+        return {
+          ...count,
+          value: count.count,
+          name: child.name
+        };
+      })
+    );
+    // });
   });
   focus_data = focus_data.flat();
   focus_data = get_stack(focus_data);
@@ -711,7 +710,7 @@ function create_hierarchy_manager() {
   // TODO: Ryan
   dataset = music_series;
   context_data = [dataset];
-  focus_data = dataset.children;
+  focus_data1 = dataset.children;
 
   // vars describing hierarchy manager size
   var pad = 30, manager_width = 600, manager_height = 800;
@@ -826,7 +825,8 @@ function create_hierarchy_manager() {
       .attr("opacity", 1.0);
 
     if (i == 0) {
-      d3.selectAll(".depth" + (i + 1))
+      d3
+        .selectAll(".depth" + (i + 1))
         .append("text")
         .attr("x", d => d.x)
         .attr("y", d => d.y - 10)
@@ -834,8 +834,8 @@ function create_hierarchy_manager() {
         .attr("font-size", "12px")
         .attr("fill", "black");
     } else {
-
-      d3.selectAll(".depth" + (i + 1))
+      d3
+        .selectAll(".depth" + (i + 1))
         .append("text")
         .attr("x", d => d.x + 10)
         .attr("y", d => d.y + 5)
@@ -851,10 +851,9 @@ function create_hierarchy_manager() {
     .data(["90deg", "270deg"])
     .enter()
     .append("g")
-    .append("rect")
+    .append("path")
     .attr("transform", "translate(" + 300 + "," + 300 + ")")
-    .attr("width", 30)
-    .attr("height", 30)
+    .attr("d", d3.symbolDiamond())
     .style("opacity", 0)
     .on("click", handleClick);
 
@@ -864,9 +863,35 @@ function create_hierarchy_manager() {
     .on("mouseover", handleMouseOver)
     .on("mouseout", handleMouseOut);
 
+  d3
+    .select("#manager")
+    .selectAll("circle")
+    .filter(function(d) {
+      return context_data.includes(d);
+    })
+    .attr("fill", "blue");
+  d3
+    .select("#manager")
+    .selectAll("circle")
+    .filter(function(d) {
+      return focus_data1.includes(d);
+    })
+    .attr("fill", "red");
   var selectedNode;
   function handleClick(d, i) {
-    selectedNode.attr("fill", "blue");
+    var d = selectedNode.data()[0];
+    if (focus_data1.includes(d)) {
+      selectedNode.attr("fill", "#9999");
+      focus_data1.splice(focus_data1.indexOf(d), 1);
+      focus_data1.push(...d.children);
+      d3
+        .select("#manager")
+        .selectAll("circle")
+        .filter(function(d) {
+          return focus_data1.includes(d);
+        })
+        .attr("fill", "red");
+    }
   }
   function handleMouseOver(d, i) {
     // Add interactivity
