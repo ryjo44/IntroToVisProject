@@ -849,7 +849,8 @@ function create_hierarchy_manager() {
     .select("#manager")
     .append("g")
     .attr("id", "button")
-    .attr("transform", "translate(" + 300 + "," + 300 + ")");
+    .attr("transform", "translate(" + 300 + "," + 300 + ")")
+    .style("opacity", 0);
   symbol
     .selectAll(".symbol")
     .data([[90, 0], [270, -30]])
@@ -882,28 +883,14 @@ function create_hierarchy_manager() {
       return focus_data1.includes(d);
     })
     .attr("fill", "red");
+
   var selectedNode;
-  function handleClick(d, i) {
-    var d = selectedNode.data()[0];
-    if (focus_data1.includes(d)) {
-      selectedNode.attr("fill", "#9999");
-      focus_data1.splice(focus_data1.indexOf(d), 1);
-      focus_data1.push(...d.children);
-      d3
-        .select("#manager")
-        .selectAll("circle")
-        .filter(function(d) {
-          return focus_data1.includes(d);
-        })
-        .attr("fill", "red");
-    }
-  }
 
   function handleClick(data, i) {
-    console.log(data);
+    symbol.style("opacity", 1);
     if (data[0] === 90) {
       var d = selectedNode.data()[0];
-      if (focus_data1.includes(d)) {
+      if (focus_data1.includes(d) && d.children.length !== 0) {
         selectedNode.attr("fill", "#9999");
         focus_data1.splice(focus_data1.indexOf(d), 1);
         focus_data1.push(...d.children);
@@ -914,7 +901,11 @@ function create_hierarchy_manager() {
             return focus_data1.includes(d);
           })
           .attr("fill", "red");
-      } else if (context_data.includes(d)) {
+      } else if (
+        context_data.includes(d) &&
+        focus_data1.filter(value => -1 !== d.children.indexOf(value)).length ===
+          0
+      ) {
         selectedNode.attr("fill", "#9999");
         context_data.splice(context_data.indexOf(d), 1);
         context_data.push(...d.children);
@@ -928,17 +919,26 @@ function create_hierarchy_manager() {
       }
     } else {
       var d = selectedNode.data()[0];
-      if (focus_data1.includes(d)) {
-        for (var children in d.parent.children) {
-          if (children in focus_data1) {
+      if (
+        focus_data1.includes(d) &&
+        d.parent !== null &&
+        !context_data.includes(d.parent)
+      ) {
+        for (var children of d.parent.children) {
+          if (focus_data1.includes(children)) {
             focus_data1.splice(focus_data1.indexOf(children), 1);
           }
         }
         focus_data1.push(d.parent);
-      } else if (context_data.includes(d)) {
+      } else if (context_data.includes(d) && d.parent !== null) {
         selectedNode.attr("fill", "#9999");
+        for (var children of d.parent.children) {
+          if (context_data.includes(children)) {
+            context_data.splice(context_data.indexOf(children), 1);
+          }
+        }
         context_data.splice(context_data.indexOf(d), 1);
-        context_data.push(...d.children);
+        context_data.push(d.parent);
       }
       d3
         .select("#manager")
@@ -962,11 +962,13 @@ function create_hierarchy_manager() {
         })
         .attr("fill", "#9999");
     }
+    create_focus_steamgraph();
+    create_context_streamgraph();
   }
   function handleMouseOver(d, i) {
     // Add interactivity
 
-    // .style("opacity", 1);
+    symbol.style("opacity", 1);
     selectedNode = d3.select(this);
     symbol.attr(
       "transform",
