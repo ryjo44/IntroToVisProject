@@ -710,7 +710,7 @@ function create_hierarchy_manager() {
   // TODO: Ryan
   dataset = music_series;
   context_data = [dataset];
-  focus_data1 = dataset.children;
+  focus_data1 = dataset.children.slice(0);
 
   // vars describing hierarchy manager size
   var pad = 30, manager_width = 600, manager_height = 800;
@@ -847,14 +847,19 @@ function create_hierarchy_manager() {
 
   var symbol = d3
     .select("#manager")
+    .append("g")
+    .attr("id", "button")
+    .attr("transform", "translate(" + 300 + "," + 300 + ")");
+  symbol
     .selectAll(".symbol")
-    .data(["90deg", "270deg"])
+    .data([[90, 0], [270, -30]])
     .enter()
     .append("g")
+    .attr("transform", d => "translate(" + d[1] + ",0)")
     .append("path")
-    .attr("transform", "translate(" + 300 + "," + 300 + ")")
-    .attr("d", d3.symbolDiamond())
-    .style("opacity", 0)
+    .attr("d", d3.symbol().type(d3.symbolTriangle))
+    // .style("opacity", 0)
+    .attr("transform", d => "rotate(" + d[0] + ")")
     .on("click", handleClick);
 
   d3
@@ -893,20 +898,88 @@ function create_hierarchy_manager() {
         .attr("fill", "red");
     }
   }
+
+  function handleClick(data, i) {
+    console.log(data);
+    if (data[0] === 90) {
+      var d = selectedNode.data()[0];
+      if (focus_data1.includes(d)) {
+        selectedNode.attr("fill", "#9999");
+        focus_data1.splice(focus_data1.indexOf(d), 1);
+        focus_data1.push(...d.children);
+        d3
+          .select("#manager")
+          .selectAll("circle")
+          .filter(function(d) {
+            return focus_data1.includes(d);
+          })
+          .attr("fill", "red");
+      } else if (context_data.includes(d)) {
+        selectedNode.attr("fill", "#9999");
+        context_data.splice(context_data.indexOf(d), 1);
+        context_data.push(...d.children);
+        d3
+          .select("#manager")
+          .selectAll("circle")
+          .filter(function(d) {
+            return context_data.includes(d);
+          })
+          .attr("fill", "blue");
+      }
+    } else {
+      var d = selectedNode.data()[0];
+      if (focus_data1.includes(d)) {
+        for (var children in d.parent.children) {
+          if (children in focus_data1) {
+            focus_data1.splice(focus_data1.indexOf(children), 1);
+          }
+        }
+        focus_data1.push(d.parent);
+      } else if (context_data.includes(d)) {
+        selectedNode.attr("fill", "#9999");
+        context_data.splice(context_data.indexOf(d), 1);
+        context_data.push(...d.children);
+      }
+      d3
+        .select("#manager")
+        .selectAll("circle")
+        .filter(function(d) {
+          return context_data.includes(d);
+        })
+        .attr("fill", "blue");
+      d3
+        .select("#manager")
+        .selectAll("circle")
+        .filter(function(d) {
+          return focus_data1.includes(d);
+        })
+        .attr("fill", "red");
+      d3
+        .select("#manager")
+        .selectAll("circle")
+        .filter(function(d) {
+          return !focus_data1.includes(d) && !context_data.includes(d);
+        })
+        .attr("fill", "#9999");
+    }
+  }
   function handleMouseOver(d, i) {
     // Add interactivity
-    symbol
-      .attr(
-        "transform",
-        "translate(" + (d3.event.x - pad) + "," + (d3.event.y - pad) + ")"
-      )
-      .style("opacity", 1);
+
+    // .style("opacity", 1);
     selectedNode = d3.select(this);
-    console.log(selectedNode);
+    symbol.attr(
+      "transform",
+      "translate(" +
+        selectedNode.attr("cx") +
+        "," +
+        selectedNode.attr("cy") +
+        ")"
+    );
   }
 
   function handleMouseOut(d, i) {
     // Add interactivity
-    // symbol.style("opacity", 0);
+    // symbol.selectAll("g").style("opacity", 1);
   }
 }
