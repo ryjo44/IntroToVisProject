@@ -413,18 +413,15 @@ function create_context_streamgraph() {
   });
   data = data.flat();
   data = get_stack(data);
-  cutoff = [
-    0,
-    Math.floor(data.length / 3),
-    Math.floor(data.length / 3 * 2),
-    data.length + 1
-  ];
+
   x_context_scale = x_context_scale.domain(d3.extent(data, d => d.date));
   y_context_scale = y_context_scale.domain([
     -d3.max(data, d => d.values[1]),
     d3.max(data, d => d.values[1])
   ]);
-  color = d3.scaleOrdinal(d3.schemeCategory10).domain(data.map(d => d.name));
+  color = d3
+    .scaleOrdinal(context_data.map(d => d.color))
+    .domain(context_data.map(d => d.name));
   area = d3
     .area()
     .curve(d3.curveLinear)
@@ -505,23 +502,23 @@ function create_context_streamgraph() {
           }
           var invertedx1 = x_context_scale.invert(bigBrushX1),
             invertedx2 = x_context_scale.invert(bigBrushX2);
-          var closest = data[0];
-          for (var k = 0; k < data.length; k++) {
+          closest = date_list[0];
+          for (var k = 0; k < date_list.length; k++) {
             if (
-              Math.abs(data[k].date.getTime() - invertedx1.getTime()) <
-              Math.abs(closest.date.getTime() - invertedx1.getTime())
+              Math.abs(date_list[k].getTime() - invertedx1.getTime()) <
+              Math.abs(closest.getTime() - invertedx1.getTime())
             ) {
-              closest = data[k];
+              closest = date_list[k];
               cutoff[0] = k - 1;
             }
           }
-          var closest = data[0];
-          for (var k = 0; k < data.length; k++) {
+          var closest = date_list[0];
+          for (var k = 0; k < date_list.length; k++) {
             if (
-              Math.abs(data[k].date.getTime() - invertedx2.getTime()) <
-              Math.abs(closest.date.getTime() - invertedx2.getTime())
+              Math.abs(date_list[k].getTime() - invertedx2.getTime()) <
+              Math.abs(closest.getTime() - invertedx2.getTime())
             ) {
-              closest = data[k];
+              closest = date_list[k];
               cutoff[3] = k + 1;
             }
           }
@@ -549,23 +546,23 @@ function create_context_streamgraph() {
           }
           var invertedx1 = x_context_scale.invert(smallBrushX1),
             invertedx2 = x_context_scale.invert(smallBrushX2);
-          closest = data[0];
-          for (var k = 0; k < data.length; k++) {
+          closest = date_list[0];
+          for (var k = 0; k < date_list.length; k++) {
             if (
-              Math.abs(data[k].date.getTime() - invertedx1.getTime()) <
-              Math.abs(closest.date.getTime() - invertedx1.getTime())
+              Math.abs(date_list[k].getTime() - invertedx1.getTime()) <
+              Math.abs(closest.getTime() - invertedx1.getTime())
             ) {
-              closest = data[k];
+              closest = date_list[k];
               cutoff[1] = k - 1;
             }
           }
-          var closest = data[0];
-          for (var k = 0; k < data.length; k++) {
+          var closest = date_list[0];
+          for (var k = 0; k < date_list.length; k++) {
             if (
-              Math.abs(data[k].date.getTime() - invertedx2.getTime()) <
-              Math.abs(closest.date.getTime() - invertedx2.getTime())
+              Math.abs(date_list[k].getTime() - invertedx2.getTime()) <
+              Math.abs(closest.getTime() - invertedx2.getTime())
             ) {
-              closest = data[k];
+              closest = date_list[k];
               cutoff[2] = k + 1;
             }
           }
@@ -576,6 +573,8 @@ function create_context_streamgraph() {
   d3.select("#focus").append("g").attr("id", "x_focus_axis");
 }
 
+function slice_data() {}
+
 function create_focus_steamgraph() {
   d3.select("#focus").selectAll("path").remove();
 
@@ -585,7 +584,7 @@ function create_focus_steamgraph() {
     .attr("class", "tooltip")
     .style("opacity", 0);
   x_focus_scale = x_focus_scale.domain(
-    d3.extent(data.slice(cutoff[0], cutoff[3]), d => d.date)
+    d3.extent(date_list.slice(cutoff[0], cutoff[3]))
   );
 
   d3
@@ -593,12 +592,43 @@ function create_focus_steamgraph() {
     .call(d3.axisBottom(x_focus_scale).tickFormat(d3.timeFormat("%Y-%m-%d")))
     .attr("transform", "translate(" + 0 + "," + 500 + ")");
   y_focus_scale = y_focus_scale.domain([
-    -d3.max(data.slice(cutoff[0], cutoff[3]), d => d.values[1]),
-    d3.max(data.slice(cutoff[0], cutoff[3]), d => d.values[1])
+    -d3.max(data, d => d.values[1]),
+    d3.max(data, d => d.values[1])
   ]);
 
-  first_data = data.slice(cutoff[0], cutoff[1]);
-  third_data = data.slice(cutoff[2], cutoff[3]);
+  first_data = [];
+  context_data.map(child => {
+    // parent.children.map(child => {
+    first_data.push(
+      child.counts.slice(cutoff[0], cutoff[1]).map(count => {
+        return {
+          ...count,
+          value: count.count,
+          name: child.name
+        };
+      })
+    );
+    // });
+  });
+  first_data = first_data.flat();
+  first_data = get_stack(first_data);
+  third_data = [];
+  context_data.map(child => {
+    // parent.children.map(child => {
+    third_data.push(
+      child.counts.slice(cutoff[2], cutoff[3]).map(count => {
+        return {
+          ...count,
+          value: count.count,
+          name: child.name
+        };
+      })
+    );
+    // });
+  });
+  third_data = third_data.flat();
+  third_data = get_stack(third_data);
+  //
   area = d3
     .area()
     .curve(d3.curveLinear)
@@ -643,7 +673,7 @@ function create_focus_steamgraph() {
   // Define the div for the tooltip
 
   color = d3
-    .scaleOrdinal(d3.schemeCategory10)
+    .scaleOrdinal(focus_data1.map(d => d.color))
     .domain(focus_data.map(d => d.name));
   d3
     .select("#focus")
@@ -712,6 +742,13 @@ function create_hierarchy_manager() {
   context_data = [dataset];
   focus_data1 = dataset.children.slice(0);
 
+  date_list = dataset.counts.map(d => d.date);
+  cutoff = [
+    0,
+    Math.floor(date_list.length / 3),
+    Math.floor(date_list.length / 3 * 2),
+    date_list.length + 1
+  ];
   // vars describing hierarchy manager size
   var pad = 30, manager_width = 600, manager_height = 800;
 
@@ -891,9 +928,10 @@ function create_hierarchy_manager() {
     if (data[0] === 90) {
       var d = selectedNode.data()[0];
       if (focus_data1.includes(d) && d.children.length !== 0) {
+        var to_insert = focus_data1.indexOf(d);
         selectedNode.attr("fill", "#9999");
         focus_data1.splice(focus_data1.indexOf(d), 1);
-        focus_data1.push(...d.children);
+        focus_data1.splice(to_insert, 0, ...d.children);
         d3
           .select("#manager")
           .selectAll("circle")
@@ -962,8 +1000,8 @@ function create_hierarchy_manager() {
         })
         .attr("fill", "#9999");
     }
-    create_focus_steamgraph();
     create_context_streamgraph();
+    create_focus_steamgraph();
   }
   function handleMouseOver(d, i) {
     // Add interactivity
