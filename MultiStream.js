@@ -223,8 +223,8 @@ function add_parent_links(node) {
 }
 
 function create_color(root_node) {
-  // black color for root
-  root_node.color = d3.rgb(0, 0, 0);
+  // gray color for root
+  root_node.color = d3.rgb(119, 136, 153);
   var hue_scale = d3
     .scaleLinear()
     .domain([0, root_node.children.length - 1])
