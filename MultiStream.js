@@ -359,6 +359,13 @@ function create_svg() {
     .attr("height", manager_height)
     .attr("fill", "#999999")
     .attr("opacity", 0.1);
+  d3.select("#context").append("g").attr("id", "bigBrushGroup");
+  d3.select("#context").append("g").attr("id", "smallBrushGroup");
+  div = d3
+    .select("body")
+    .append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
 }
 
 function multimap(
@@ -396,7 +403,6 @@ function get_stack(input) {
   }
   return input;
 }
-
 function create_context_streamgraph() {
   //TODO(Ellie)
   data = [];
@@ -440,10 +446,8 @@ function create_context_streamgraph() {
     .append("title")
     .text(([name]) => name);
 
-  var handle = d3
-    .select("#context")
-    .append("g")
-    .attr("id", "bigBrushGroup")
+  d3
+    .select("#bigBrushGroup")
     .selectAll(".bigBrush")
     .data(["first", "second"])
     .enter()
@@ -452,14 +456,21 @@ function create_context_streamgraph() {
     .attr("height", context_height)
     .attr("transform", d => {
       if (d === "first") {
-        return "translate(" + 0 + "," + 0 + ")";
+        return (
+          "translate(" + x_context_scale(date_list[cutoff[0]]) + "," + 0 + ")"
+        );
       }
-      return "translate(" + (streamgraph_width - 65) + "," + 0 + ")";
+      return (
+        "translate(" +
+        (x_context_scale(date_list[cutoff[3] - 2]) - 65) +
+        "," +
+        0 +
+        ")"
+      );
     });
+
   d3
-    .select("#context")
-    .append("g")
-    .attr("id", "smallBrushGroup")
+    .select("#smallBrushGroup")
     .selectAll(".smallBrush")
     .data(["first", "second"])
     .enter()
@@ -468,12 +479,17 @@ function create_context_streamgraph() {
     .attr("height", context_height)
     .attr("transform", d => {
       if (d === "first") {
-        return "translate(" + streamgraph_width / 3 + "," + 0 + ")";
+        return (
+          "translate(" + x_context_scale(date_list[cutoff[1]]) + "," + 0 + ")"
+        );
       }
-      return "translate(" + streamgraph_width / 3 * 2 + "," + 0 + ")";
+      return (
+        "translate(" + x_context_scale(date_list[cutoff[2]]) + "," + 0 + ")"
+      );
     });
 
-  var bigBrushX1 = 0, bigBrushX2 = streamgraph_width - 70;
+  var bigBrushX1 = x_context_scale(date_list[cutoff[0]]),
+    bigBrushX2 = x_context_scale(date_list[cutoff[3] - 2]) - 65;
   d3.selectAll(".bigBrush").call(
     d3
       .drag()
@@ -524,9 +540,12 @@ function create_context_streamgraph() {
           }
         })
       )
-      .on("end", create_focus_steamgraph)
+      .on("end", function() {
+        create_focus_steamgraph();
+      })
   );
-  var smallBrushX1 = 70, smallBrushX2 = streamgraph_width - 140;
+  var smallBrushX1 = x_context_scale(date_list[cutoff[1]]),
+    smallBrushX2 = x_context_scale(date_list[cutoff[2]]);
   d3.selectAll(".smallBrush").call(
     d3
       .drag()
@@ -570,32 +589,39 @@ function create_context_streamgraph() {
       )
       .on("end", create_focus_steamgraph)
   );
-  d3.select("#focus").append("g").attr("id", "x_focus_axis");
+  d3
+    .select("#context")
+    .append("g")
+    .attr("id", "x_context_axis")
+    .call(d3.axisBottom(x_context_scale).tickFormat(d3.timeFormat("%Y-%m-%d")))
+    .attr("transform", "translate(" + 0 + "," + context_height + ")");
 }
-
-function slice_data() {}
 
 function create_focus_steamgraph() {
   d3.select("#focus").selectAll("path").remove();
 
-  var div = d3
-    .select("body")
-    .append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0);
-  x_focus_scale = x_focus_scale.domain(
-    d3.extent(date_list.slice(cutoff[0], cutoff[3]))
+  var focus_width =
+    Math.ceil(streamgraph_width / date_list.length) *
+    1.5 *
+    (cutoff[2] - cutoff[1]);
+  var first_width = Math.floor(
+    (streamgraph_width - focus_width) /
+      (cutoff[1] - cutoff[0] + cutoff[3] - cutoff[2]) *
+      (cutoff[1] - cutoff[0])
   );
+  var third_width =
+    (streamgraph_width - focus_width) /
+    (cutoff[1] - cutoff[0] + cutoff[3] - cutoff[2]) *
+    (cutoff[3] - cutoff[2]);
 
-  d3
-    .select("#x_focus_axis")
-    .call(d3.axisBottom(x_focus_scale).tickFormat(d3.timeFormat("%Y-%m-%d")))
-    .attr("transform", "translate(" + 0 + "," + 500 + ")");
   y_focus_scale = y_focus_scale.domain([
     -d3.max(data, d => d.values[1]),
     d3.max(data, d => d.values[1])
   ]);
 
+  color = d3
+    .scaleOrdinal(context_data.map(d => d.color))
+    .domain(context_data.map(d => d.name));
   first_data = [];
   context_data.map(child => {
     // parent.children.map(child => {
@@ -612,6 +638,40 @@ function create_focus_steamgraph() {
   });
   first_data = first_data.flat();
   first_data = get_stack(first_data);
+  first_scale = d3
+    .scaleTime()
+    .domain(d3.extent(date_list.slice(cutoff[0], cutoff[1])))
+    .range([0, first_width]);
+  second_scale = d3
+    .scaleTime()
+    .domain(d3.extent(date_list.slice(cutoff[1], cutoff[2])))
+    .range([first_width, first_width + focus_width]);
+  third_scale = d3
+    .scaleTime()
+    .domain(d3.extent(date_list.slice(cutoff[2], cutoff[3])))
+    .range([
+      first_width + focus_width,
+      first_width + focus_width + third_width
+    ]);
+  x_focus_scale = x_focus_scale.domain(
+    d3.extent(date_list.slice(cutoff[0], cutoff[3]))
+  );
+  area = d3
+    .area()
+    .curve(d3.curveLinear)
+    .x(d => first_scale(d.date))
+    .y0(d => y_focus_scale(d.values[0]))
+    .y1(d => y_focus_scale(d.values[1]));
+  d3
+    .select("#focus")
+    .append("g")
+    .selectAll("path")
+    .data([...multimap(first_data.map(d => [d.name, d]))])
+    .enter()
+    .append("path")
+    .attr("fill", ([name]) => color(name))
+    .attr("d", ([, values]) => area(values));
+
   third_data = [];
   context_data.map(child => {
     // parent.children.map(child => {
@@ -629,22 +689,7 @@ function create_focus_steamgraph() {
   third_data = third_data.flat();
   third_data = get_stack(third_data);
   //
-  area = d3
-    .area()
-    .curve(d3.curveLinear)
-    .x(d => x_focus_scale(d.date))
-    .y0(d => y_focus_scale(d.values[0]))
-    .y1(d => y_focus_scale(d.values[1]));
-  d3
-    .select("#focus")
-    .append("g")
-    .selectAll("path")
-    .data([...multimap(first_data.map(d => [d.name, d]))])
-    .enter()
-    .append("path")
-    .attr("fill", ([name]) => color(name))
-    .attr("d", ([, values]) => area(values));
-
+  area = area.x(d => third_scale(d.date));
   d3
     .select("#focus")
     .append("g")
@@ -654,6 +699,7 @@ function create_focus_steamgraph() {
     .append("path")
     .attr("fill", ([name]) => color(name))
     .attr("d", ([, values]) => area(values));
+  area = area.x(d => second_scale(d.date));
   focus_data = [];
   focus_data1.map(child => {
     // parent.children.map(child => {
